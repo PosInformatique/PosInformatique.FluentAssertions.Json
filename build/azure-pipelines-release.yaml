@@ -9,6 +9,7 @@ parameters:
   default: rc.1
 
 trigger: none
+pr: none
 
 pool:
   vmImage: ubuntu-latest
