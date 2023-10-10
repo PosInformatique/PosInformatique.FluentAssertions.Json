@@ -1,0 +1,13 @@
+trigger:
+- main
+
+pool:
+  vmImage: ubuntu-latest
+
+steps:
+- task: DotNetCoreCLI@2
+  name: BuildLibrary
+  displayName: Build the library
+  inputs:
+    command: 'build'
+    projects: 'PosInformatique.FluentAssertions.Json.sln'
