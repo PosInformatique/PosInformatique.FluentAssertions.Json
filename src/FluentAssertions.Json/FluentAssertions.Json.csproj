@@ -5,7 +5,19 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <Description>PosInformatique.FluentAssertions.Json is a library to assert JSON serialization using the Fluent Assertions library style coding.</Description>
+    <PackageIcon>Icon.png</PackageIcon>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/PosInformatique/PosInformatique.FluentAssertions.Json</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageReleaseNotes>
+      1.0.1
+      - Various fixes for the NuGet package.
+      
+      1.0.0
+      - Initial version
+    </PackageReleaseNotes>
+    <PackageTags>json unittest fluent assertions assert xunit mstest serialization deserialization</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
@@ -13,7 +25,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\..\README.md" Pack="true" PackagePath="\"/>
+    <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Icon.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
   
 </Project>
