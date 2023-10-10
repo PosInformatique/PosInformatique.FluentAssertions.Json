@@ -22,7 +22,7 @@ jobs:
     displayName: Build the library
     inputs:
       command: 'pack'
-      packagesToPack: '**/*.csproj'
+      packagesToPack: 'src/FluentAssertions.Json/FluentAssertions.Json.csproj'
       configuration: 'Release'
       versioningScheme: 'off'
       buildProperties: 'VersionPrefix=${{parameters.VersionPrefix}};VersionSuffix=${{parameters.VersionSuffix}}'
