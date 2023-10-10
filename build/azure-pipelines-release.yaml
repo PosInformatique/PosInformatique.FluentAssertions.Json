@@ -4,7 +4,7 @@ parameters:
   type: string
   default: 1.0.0
 - name: VersionSuffix
-  displayName: The version suffix of the library (rc.1)
+  displayName: The version suffix of the library (rc.1). Use a space ' ' if no suffix.
   type: string
   default: rc.1
 
