@@ -11,3 +11,12 @@ steps:
   inputs:
     command: 'build'
     projects: 'PosInformatique.FluentAssertions.Json.sln'
+    arguments: '--property:Configuration=Debug'
+
+- task: DotNetCoreCLI@2
+  name: ExecuteUnitTests
+  displayName: Execute the unit tests
+  inputs:
+    command: 'test'
+    projects: 'PosInformatique.FluentAssertions.Json.sln'
+    arguments: '--property:Configuration=Debug'
