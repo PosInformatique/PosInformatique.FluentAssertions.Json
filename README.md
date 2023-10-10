@@ -4,7 +4,8 @@ PosInformatique.FluentAssertions.Json is a library to assert JSON serialization 
 ## Installing from NuGet
 The [PosInformatique.FluentAssertions.Json](https://www.nuget.org/packages/PosInformatique.FluentAssertions.Json/)
 library is available directly on the
-[NuGet](https://www.nuget.org/packages/PosInformatique.FluentAssertions.Json/) official website.
+[![Nuget](https://img.shields.io/nuget/v/PosInformatique.FluentAssertions.Json)](https://www.nuget.org/packages/PosInformatique.FluentAssertions.Json/)
+official website.
 
 To download and install the library to your Visual Studio unit test projects use the following NuGet command line 
 
@@ -68,7 +69,7 @@ public void Serialization()
 ```
 
 With the following kind of exception when the unit test is incorrect:
-![Ugly exception](./docs/UglyExceptionExample.png)
+![Ugly exception](https://raw.githubusercontent.com/PosInformatique/PosInformatique.FluentAssertions.Json/main/docs/UglyExceptionExample.png)
 
 As you can see the previous code is not sexy to read (and to write!) and the exception is
 hard to understand...
@@ -95,7 +96,7 @@ public void Serialization()
 ```
 
 And when an exception is occured, the exception message contains the JSON path of the property which is error:
-![Pretty exception](./docs/PrettyExceptionExample.png)
+![Pretty exception](https://raw.githubusercontent.com/PosInformatique/PosInformatique.FluentAssertions.Json/main/docs/PrettyExceptionSample.png)
 
 ### Test the deserialization of a JSON object to a .NET Object
 You can in the same way test the deserialization JSON object into a .NET object.
