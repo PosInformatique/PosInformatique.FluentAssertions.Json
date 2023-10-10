@@ -22,11 +22,14 @@ jobs:
     displayName: Build the library
     inputs:
       command: 'pack'
-      projects: 'PosInformatique.FluentAssertions.Json.sln'
-      arguments: '
+      packagesToPack: '**/*.csproj'
+      configuration: 'Release'
+      versioningScheme: 'off'
+      buildProperties: '
         --property:Configuration=Release
         --property:VersionPrefix=$(VersionPrefix)
         --property:VersionSuffix=$(VersionSuffix)'
+      verbosityPack: 'Normal'
 
 #  - task: NuGetCommand@2
 #    name: PublishNuGetPackages
