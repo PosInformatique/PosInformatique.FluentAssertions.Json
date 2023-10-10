@@ -26,7 +26,7 @@ jobs:
       configuration: 'Release'
       versioningScheme: 'off'
       buildProperties: '
-        VersionPrefix=${{parameters.VersionPrefix}}
+        VersionPrefix=${{parameters.VersionPrefix}};
         VersionSuffix=${{parameters.VersionSuffix}}'
       verbosityPack: 'Normal'
 
