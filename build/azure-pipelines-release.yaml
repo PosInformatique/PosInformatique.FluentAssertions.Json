@@ -25,9 +25,7 @@ jobs:
       packagesToPack: '**/*.csproj'
       configuration: 'Release'
       versioningScheme: 'off'
-      buildProperties: '
-        VersionPrefix=${{parameters.VersionPrefix}};
-        VersionSuffix=${{parameters.VersionSuffix}}'
+      buildProperties: 'VersionPrefix=${{parameters.VersionPrefix}};VersionSuffix=${{parameters.VersionSuffix}}'
       verbosityPack: 'Normal'
 
 #  - task: NuGetCommand@2
