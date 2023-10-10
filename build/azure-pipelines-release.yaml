@@ -35,11 +35,11 @@ jobs:
         buildProperties: 'VersionPrefix=${{parameters.VersionPrefix}};VersionSuffix=${{parameters.VersionSuffix}}'
         verbosityPack: 'Normal'
 
-  #  - task: NuGetCommand@2
-  #    name: PublishNuGetPackages
-  #    displayName: Publish to NuGet
-  #    inputs:
-  #      command: 'push'
-  #      packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
-  #      nuGetFeedType: 'external'
-  #      publishFeedCredentials: 'nuget.org'
+    - task: NuGetCommand@2
+      name: PublishNuGetPackages
+      displayName: Publish to NuGet
+      inputs:
+        command: 'push'
+        packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
+        nuGetFeedType: 'external'
+        publishFeedCredentials: 'nuget.org'
