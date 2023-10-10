@@ -11,7 +11,7 @@ jobs:
     name: BuildLibrary
     displayName: Build the library
     inputs:
-      command: 'pack'
+      command: 'build'
       projects: 'PosInformatique.FluentAssertions.Json.sln'
       arguments: '--property:Configuration=Debug'
 
