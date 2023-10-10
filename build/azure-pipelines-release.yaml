@@ -23,7 +23,7 @@ jobs:
       displayName: Update build number
       inputs:
         targetType: 'inline'
-        script: 'Write-Host "##vso[build.updatebuildnumber]${{parameters.VersionPrefix}}-${{parameters.VersionSuffix}}"'
+        script: 'Write-Host "##vso[build.updatebuildnumber]${{parameters.VersionPrefix}}-${{parameters.VersionSuffix}}".Trim()'
 
     - task: DotNetCoreCLI@2
       name: BuildLibrary
