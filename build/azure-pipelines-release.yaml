@@ -26,8 +26,8 @@ jobs:
       configuration: 'Release'
       versioningScheme: 'off'
       buildProperties: '
-        VersionPrefix=$(VersionPrefix)
-        VersionSuffix=$(VersionSuffix)'
+        VersionPrefix=${{VersionPrefix}}
+        VersionSuffix=${{VersionSuffix}}'
       verbosityPack: 'Normal'
 
 #  - task: NuGetCommand@2
