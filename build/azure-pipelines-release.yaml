@@ -22,7 +22,7 @@ jobs:
       displayName: Update build number
       inputs:
         targetType: 'inline'
-        script: 'Write-Host "##vso[build.updatebuildnumber]${{parameters.VersionPrefix}}${{parameters.VersionSuffix}}"'
+        script: 'Write-Host "##vso[build.updatebuildnumber]${{parameters.VersionPrefix}}$(if ("{{parameters.VersionSuffix}}" -ne "") { "-${{parameters.VersionSuffix}}" })"'
 
     - task: DotNetCoreCLI@2
       name: BuildLibrary
