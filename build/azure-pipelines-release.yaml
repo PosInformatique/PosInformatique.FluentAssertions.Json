@@ -4,7 +4,7 @@ parameters:
   type: string
   default: 1.0.0
 - name: VersionSuffix
-  displayName: The version suffix of the library (rc.1)
+  displayName: The version suffix of the library (rc.1). Use a space ' ' if no suffix.
   type: string
   default: rc.1
 
@@ -23,7 +23,15 @@ jobs:
       displayName: Update build number
       inputs:
         targetType: 'inline'
-        script: 'Write-Host "##vso[build.updatebuildnumber]${{parameters.VersionPrefix}}-${{parameters.VersionSuffix}}"'
+        script: '
+          if ("${{parameters.VersionSuffix}}".Trim() -eq "")
+          {
+            Write-Host "##vso[build.updatebuildnumber]${{parameters.VersionPrefix}}"
+          }
+          else
+          {
+            Write-Host "##vso[build.updatebuildnumber]${{parameters.VersionPrefix}}-${{parameters.VersionSuffix}}"
+          }'
 
     - task: DotNetCoreCLI@2
       name: BuildLibrary
@@ -36,11 +44,11 @@ jobs:
         buildProperties: 'VersionPrefix=${{parameters.VersionPrefix}};VersionSuffix=${{parameters.VersionSuffix}}'
         verbosityPack: 'Normal'
 
-    - task: NuGetCommand@2
-      name: PublishNuGetPackages
-      displayName: Publish to NuGet
-      inputs:
-        command: 'push'
-        packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
-        nuGetFeedType: 'external'
-        publishFeedCredentials: 'nuget.org'
+    #- task: NuGetCommand@2
+    #  name: PublishNuGetPackages
+    #  displayName: Publish to NuGet
+    #  inputs:
+    #    command: 'push'
+    #    packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
+    #    nuGetFeedType: 'external'
+    #    publishFeedCredentials: 'nuget.org'
