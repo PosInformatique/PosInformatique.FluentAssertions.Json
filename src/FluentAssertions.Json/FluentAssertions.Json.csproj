@@ -11,6 +11,9 @@
     <PackageProjectUrl>https://github.com/PosInformatique/PosInformatique.FluentAssertions.Json</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageReleaseNotes>
+      1.0.2
+      - Fix the README.md file.
+      
       1.0.1
       - Various fixes for the NuGet package description.
       

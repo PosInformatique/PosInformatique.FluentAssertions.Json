@@ -10,7 +10,7 @@ official website.
 To download and install the library to your Visual Studio unit test projects use the following NuGet command line 
 
 ```
-Install-Package PosInformatique.AspNet.WebForms.DependencyInjection
+Install-Package PosInformatique.FluentAssertions.Json
 ```
 
 ## How it is work?
