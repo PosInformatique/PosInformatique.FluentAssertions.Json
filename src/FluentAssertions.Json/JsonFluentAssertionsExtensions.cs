@@ -50,7 +50,7 @@ namespace FluentAssertions
                 }
             }
 
-            var expectedJsonDocument = JsonSerializer.SerializeToDocument(expectedJson, JsonSerializationOptions);
+            var expectedJsonDocument = JsonDocument.Parse(JsonSerializer.Serialize(expectedJson, JsonSerializationOptions));
 
             Compare(deserializedJsonDocument!, expectedJsonDocument);
         }
