@@ -124,5 +124,5 @@ public void Deserialization()
 target the .NET Standard 2.0 and can be used with various of .NET architecture (.NET Core, .NET Framework,...).
 
 - The [PosInformatique.FluentAssertions.Json](https://www.nuget.org/packages/PosInformatique.FluentAssertions.Json/) library
-use the 4.6.0 version of the [System.Text.Json](https://www.nuget.org/packages/System.Text.Json/) NuGet package
+use the 5.0.0 version of the [System.Text.Json](https://www.nuget.org/packages/System.Text.Json/) NuGet package
 and can be used with old projects that target this library version and earlier.

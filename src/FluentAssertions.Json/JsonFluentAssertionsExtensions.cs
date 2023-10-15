@@ -7,15 +7,17 @@
 namespace FluentAssertions
 {
     using System.Diagnostics;
+    using System.Net;
+    using System.Reflection;
     using System.Text.Json;
     using System.Text.Json.Serialization;
     using FluentAssertions.Common;
+    using FluentAssertions.Equivalency;
     using FluentAssertions.Primitives;
 
     /// <summary>
     /// Contains extension methods to check if an object is serializable or deserializable to JSON object.
     /// </summary>
-    [DebuggerNonUserCode]
     public static class JsonFluentAssertionsExtensions
     {
         private static readonly JsonSerializerOptions JsonSerializationOptions = new JsonSerializerOptions()
@@ -66,7 +68,27 @@ namespace FluentAssertions
             var jsonText = JsonSerializer.Serialize(assertions.Subject, JsonSerializationOptions);
             var deserializedObject = JsonSerializer.Deserialize<T>(jsonText, JsonSerializationOptions);
 
-            deserializedObject.Should().BeEquivalentTo(expectedObject);
+            deserializedObject.Should().BeEquivalentTo(expectedObject, opt =>
+            {
+                return opt.Excluding(member => IsIgnoredProperty(member));
+            });
+        }
+
+        private static bool IsIgnoredProperty(IMemberInfo member)
+        {
+            var property = member.SelectedMemberInfo.DeclaringType.GetProperty(member.SelectedMemberInfo.Name);
+
+            var attribute = property.GetCustomAttribute<JsonIgnoreAttribute>();
+
+            if (attribute is not null)
+            {
+                if (attribute.Condition == JsonIgnoreCondition.Always)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private static void Compare(JsonDocument document, JsonDocument expected)
