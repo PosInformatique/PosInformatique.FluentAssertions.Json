@@ -76,7 +76,7 @@ namespace FluentAssertions
 
         private static bool IsIgnoredProperty(IMemberInfo member)
         {
-            var property = member.SelectedMemberInfo.DeclaringType.GetProperty(member.SelectedMemberInfo.Name);
+            var property = member.DeclaringType.GetProperty(member.Name);
 
             var attribute = property.GetCustomAttribute<JsonIgnoreAttribute>();
 
