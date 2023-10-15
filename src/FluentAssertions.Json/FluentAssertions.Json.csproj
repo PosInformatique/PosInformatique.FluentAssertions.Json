@@ -11,15 +11,18 @@
     <PackageProjectUrl>https://github.com/PosInformatique/PosInformatique.FluentAssertions.Json</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageReleaseNotes>
+      1.0.4
+      - Ignore the properties with the [JsonIgnore] attribute.
+      
       1.0.3
       - Target the .NET Standard 2.0 instead of .NET Core 6.0
-      
+
       1.0.2
       - Fix the README.md file.
-      
+
       1.0.1
       - Various fixes for the NuGet package description.
-      
+
       1.0.0
       - Initial version
     </PackageReleaseNotes>
@@ -28,7 +31,7 @@
 
   <ItemGroup>
     <PackageReference Include="FluentAssertions" Version="5.0.0" />
-    <PackageReference Include="System.Text.Json" Version="4.6.0" />
+    <PackageReference Include="System.Text.Json" Version="5.0.0" />
   </ItemGroup>
 
   <ItemGroup>

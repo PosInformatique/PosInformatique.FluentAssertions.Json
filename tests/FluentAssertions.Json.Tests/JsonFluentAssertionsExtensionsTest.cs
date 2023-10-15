@@ -524,16 +524,32 @@ namespace FluentAssertions.Json.Tests
             public JsonSerializableClassInnerObject InnerObject { get; set; }
 
             [JsonPropertyName("collection_int")]
+            [JsonIgnore(Condition = JsonIgnoreCondition.Never)]
             public List<int> CollectionInt32 { get; set; }
 
             [JsonPropertyName("collection_object")]
             public List<JsonSerializableClassInnerObject> CollectionObjects { get; set; }
+
+            [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
+            public string IgnoredProperty
+            {
+                get => throw new NotImplementedException();
+                set => throw new NotImplementedException();
+            }
         }
 
         private class JsonSerializableClassInnerObject
         {
             [JsonPropertyName("inner_string_property")]
+            [JsonIgnore(Condition = JsonIgnoreCondition.Never)]
             public string InnerStringProperty { get; set; }
+
+            [JsonIgnore(Condition = JsonIgnoreCondition.Always)]
+            public string InnerIgnoredProperty
+            {
+                get => throw new NotImplementedException();
+                set => throw new NotImplementedException();
+            }
         }
     }
 }
