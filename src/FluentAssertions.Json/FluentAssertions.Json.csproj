@@ -11,6 +11,9 @@
     <PackageProjectUrl>https://github.com/PosInformatique/PosInformatique.FluentAssertions.Json</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageReleaseNotes>
+      1.1.0
+      - Allows to configure the JsonSerializationOptions globally and in specific assertions calls.
+      
       1.0.5
       - Use the FluentAssertions library version 6.0.0 instead of 5.0.0 to fix breaking changes of the API.
 
