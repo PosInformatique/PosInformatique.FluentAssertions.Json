@@ -26,6 +26,17 @@ public class Customer
     [JsonPropertyName("name")]
     [JsonPropertyOrder(2)]
     public string Name { get; set; }
+
+    [JsonPropertyName("gender")]
+    [JsonPropertyOrder(3)]
+    public Gender Gender { get; set; }
+}
+
+public enum Gender
+{
+    None = 0,
+    Male = 100,
+    Female = 200,
 }
 ```
 
@@ -36,6 +47,7 @@ var customer = new Customer()
 {
     Id = 1234,
     Name = "Gilles TOURREAU",
+    Gender = Gender.Male,
 };
 ```
 
@@ -45,6 +57,7 @@ You would like to check this class is serializable into the following JSON objec
 {
     "id": 1234,
     "name": "Gilles TOURREAU",
+    "gender": 100,
 }
 ```
 
@@ -57,14 +70,15 @@ public void Serialization()
     {
         Id = 1234,
         Name = "Gilles TOURREAU",
+        Gender = Gender.Male,
     };
 
     var json = JsonSerializer.Serialize(customer);
 
-    json.Should().Be("{\"id\":1234,\"name\":\"Gilles TOURREAU\"}");
+    json.Should().Be("{\"id\":1234,\"name\":\"Gilles TOURREAU\",\"gender\":100}");
     
     // Or
-    json.Should().Be(@"{""id"":1234,""name"":""Gilles TOURREAU""}");
+    json.Should().Be(@"{""id"":1234,""name"":""Gilles TOURREAU"",""gender"":100}");
 }
 ```
 
@@ -85,12 +99,14 @@ public void Serialization()
     {
         Id = 1234,
         Name = "Gilles TOURREAU",
+        Gender = Gender.Male,
     };
 
     customer.Should().BeJsonSerializableInto(new
     {
         id = 1234,
         name = "Gilles TOURREAU",
+        gender = 100,
     });
 }
 ```
@@ -109,15 +125,171 @@ public void Deserialization()
     {
         id = 1234,
         name = "Gilles TOURREAU",
+        gender = 100,
     };
 
     json.Should().BeJsonDeserializableInto(new Customer()
     {
         Id = 1234,
         Name = "Gilles TOURREAU",
+        Gender = Gender.Male,
     });
 }
 ```
+
+## Change the JsonSerializer options
+
+### Change globally the JsonSerializer options
+The JSON serialization and deserialization assertions use the default instance of the
+`JsonSerializerOptions`.
+
+It is possible to change globally this default options by accessing to the static instance
+of `FluentAssertionsJson.Configuration.JsonSerializerOptions`.
+
+For example, if you use xUnit test engine and you want to apply the `JsonStringEnumConverter`
+for all the unit tests in the `PosInformatique.JsonModels.Tests`, create the following
+xUnit extensions class and apply the assembly `XunitTestFrameworkAttribute` to reference this class:
+
+```csharp
+[assembly: TestFramework("PosInformatique.JsonModels.Tests.JsonModelsTestFramework", "PosInformatique.JsonModels.Tests")]
+
+namespace PosInformatique.JsonModels.Tests
+{
+    using System.Text.Json.Serialization;
+    using PosInformatique.FluentAssertions.Json;
+    using Xunit.Abstractions;
+    using Xunit.Sdk;
+
+    public class JsonModelsTestFramework : XunitTestFramework
+    {
+        public FunctionsTestFramework(IMessageSink messageSink)
+            : base(messageSink)
+        {
+            FluentAssertionsJson.Configuration.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+        }
+    }
+}
+```
+
+### Defines the JsonSerializer options specifically on an unit test.
+It is possible when calling the `BeJsonSerializableInto()` and `BeJsonDeserializableInto()` methods
+to specify the `JsonSerializerOptions` used for the serialization and deserialization process
+during the assertion.
+
+For example, to use the `JsonStringEnumConverter` to serialize the enum into a string value:
+
+```csharp
+[Fact]
+public void Serialization()
+{
+    var customer = new Customer()
+    {
+        Id = 1234,
+        Name = "Gilles TOURREAU",
+        Gender = Gender.Male,
+    };
+
+    var options = new JsonSerializerOptions()
+    {
+        new JsonStringEnumConverter(),
+    };
+
+    customer.Should().BeJsonSerializableInto(new
+    {
+        id = 1234,
+        name = "Gilles TOURREAU",
+        gender = "Male",
+    },
+    options);
+}
+
+[Fact]
+public void Deserialization()
+{
+    var json = new
+    {
+        id = 1234,
+        name = "Gilles TOURREAU",
+        gender = "Male",
+    };
+
+    var options = new JsonSerializerOptions()
+    {
+        new JsonStringEnumConverter(),
+    };
+
+    json.Should().BeJsonDeserializableInto(new Customer()
+    {
+        Id = 1234,
+        Name = "Gilles TOURREAU",
+        Gender = Gender.Male,
+    },
+    options);
+}
+```
+
+### Changes the global JsonSerializerOptions for a specific assertion.
+It is possible to changes the global `FluentAssertionsJson.Configuration.JsonSerializerOptions`
+for a specific assertion using a configuration lambda expression.
+
+For example, if you have defines globally the `JsonStringEnumConverter` converter for all the unit tests
+(see the previous examples), but you would like to remove the existing converter in the specific unit tests:
+
+```csharp
+[Fact]
+public void Serialization()
+{
+    var customer = new Customer()
+    {
+        Id = 1234,
+        Name = "Gilles TOURREAU",
+        Gender = Gender.Male,
+    };
+
+    customer.Should().BeJsonSerializableInto(new
+    {
+        id = 1234,
+        name = "Gilles TOURREAU",
+        gender = "Male",
+    },
+    opt =>
+    {
+        opt.Converters.Clear();
+    });
+}
+
+[Fact]
+public void Deserialization()
+{
+    var json = new
+    {
+        id = 1234,
+        name = "Gilles TOURREAU",
+        gender = "Male",
+    };
+
+    var options = new JsonSerializerOptions()
+    {
+        new JsonStringEnumConverter(),
+    };
+
+    json.Should().BeJsonDeserializableInto(new Customer()
+    {
+        Id = 1234,
+        Name = "Gilles TOURREAU",
+        Gender = Gender.Male,
+    },
+    opt =>
+    {
+        opt.Converters.Clear();
+    });
+}
+```
+
+> **NOTE**: The lambda expression allows to update the global
+`FluentAssertionsJson.Configuration.JsonSerializerOptions` instance during the call
+of the `BeJsonSerializableInto()` or `BeJsonDeserializableInto()` methods. Global previous
+`JsonSerializerOptions` will be restored at the end of the assertion.
 
 ## Library dependencies
 - The [PosInformatique.FluentAssertions.Json](https://www.nuget.org/packages/PosInformatique.FluentAssertions.Json/) library

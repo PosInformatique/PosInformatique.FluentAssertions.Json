@@ -6,27 +6,32 @@
 
 namespace FluentAssertions
 {
-    using System.Diagnostics;
-    using System.Net;
     using System.Reflection;
     using System.Text.Json;
     using System.Text.Json.Serialization;
     using FluentAssertions.Common;
     using FluentAssertions.Equivalency;
     using FluentAssertions.Primitives;
+    using PosInformatique.FluentAssertions.Json;
 
     /// <summary>
     /// Contains extension methods to check if an object is serializable or deserializable to JSON object.
     /// </summary>
     public static class JsonFluentAssertionsExtensions
     {
-        private static readonly JsonSerializerOptions JsonSerializationOptions = new JsonSerializerOptions()
+        /// <summary>
+        /// Check if the subject object in <paramref name="assertions"/> instance is serializable into the JSON object
+        /// specified by the <paramref name="expectedJson"/>.
+        /// </summary>
+        /// <param name="assertions"><see cref="ObjectAssertions"/> which contains the object subject to check.</param>
+        /// <param name="expectedJson">The object which represents the raw JSON object expected.</param>
+        /// <param name="options"><see cref="JsonSerializerOptions"/> to use to assert the serialization. If not specified
+        /// the default <see cref="IFluentAssertionsJsonConfiguration.JsonSerializerOptions"/> of the <see cref="FluentAssertionsJson.Configuration"/>
+        /// will be used.</param>
+        public static void BeJsonSerializableInto(this ObjectAssertions assertions, object? expectedJson, JsonSerializerOptions? options = null)
         {
-            Converters =
-            {
-                new JsonStringEnumConverter(),
-            },
-        };
+            BeJsonSerializableIntoCore(assertions, expectedJson, GetSerializerOptions(options));
+        }
 
         /// <summary>
         /// Check if the subject object in <paramref name="assertions"/> instance is serializable into the JSON object
@@ -34,11 +39,53 @@ namespace FluentAssertions
         /// </summary>
         /// <param name="assertions"><see cref="ObjectAssertions"/> which contains the object subject to check.</param>
         /// <param name="expectedJson">The object which represents the raw JSON object expected.</param>
-        public static void BeJsonSerializableInto(this ObjectAssertions assertions, object? expectedJson)
+        /// <param name="configureOptions">Allows to change the default <see cref="IFluentAssertionsJsonConfiguration.JsonSerializerOptions"/>
+        /// of the <see cref="FluentAssertionsJson.Configuration"/> used to assert the serialization.</param>
+        public static void BeJsonSerializableInto(this ObjectAssertions assertions, object? expectedJson, Action<JsonSerializerOptions> configureOptions)
         {
-            var jsonString = JsonSerializer.Serialize(assertions.Subject, JsonSerializationOptions);
+            var optionsCopy = new JsonSerializerOptions(FluentAssertionsJson.Configuration.JsonSerializerOptions);
 
-            var deserializedJsonDocument = JsonSerializer.Deserialize<JsonDocument>(jsonString, JsonSerializationOptions);
+            configureOptions(optionsCopy);
+
+            BeJsonSerializableIntoCore(assertions, expectedJson, optionsCopy);
+        }
+
+        /// <summary>
+        /// Check if the JSON subject object is deserializable into the specified <paramref name="expectedObject"/> argument.
+        /// </summary>
+        /// <typeparam name="T">Type of the object to deserialize from JSON.</typeparam>
+        /// <param name="assertions"><see cref="ObjectAssertions"/> which contains the JSON object subject to deserialize.</param>
+        /// <param name="expectedObject">Expected object deserialized expected.</param>
+        /// <param name="options"><see cref="JsonSerializerOptions"/> to use to assert the deserialization. If not specified
+        /// the default <see cref="IFluentAssertionsJsonConfiguration.JsonSerializerOptions"/> of the <see cref="FluentAssertionsJson.Configuration"/>
+        /// will be used.</param>
+        public static void BeJsonDeserializableInto<T>(this ObjectAssertions assertions, T expectedObject, JsonSerializerOptions? options = null)
+        {
+            BeJsonDeserializableIntoCore(assertions, expectedObject, GetSerializerOptions(options));
+        }
+
+        /// <summary>
+        /// Check if the JSON subject object is deserializable into the specified <paramref name="expectedObject"/> argument.
+        /// </summary>
+        /// <typeparam name="T">Type of the object to deserialize from JSON.</typeparam>
+        /// <param name="assertions"><see cref="ObjectAssertions"/> which contains the JSON object subject to deserialize.</param>
+        /// <param name="expectedObject">Expected object deserialized expected.</param>
+        /// <param name="configureOptions">Allows to change the default <see cref="IFluentAssertionsJsonConfiguration.JsonSerializerOptions"/>
+        /// of the <see cref="FluentAssertionsJson.Configuration"/> used to assert the deserialization.</param>
+        public static void BeJsonDeserializableInto<T>(this ObjectAssertions assertions, T expectedObject, Action<JsonSerializerOptions> configureOptions)
+        {
+            var optionsCopy = new JsonSerializerOptions(FluentAssertionsJson.Configuration.JsonSerializerOptions);
+
+            configureOptions(optionsCopy);
+
+            BeJsonDeserializableIntoCore(assertions, expectedObject, optionsCopy);
+        }
+
+        private static void BeJsonSerializableIntoCore(this ObjectAssertions assertions, object? expectedJson, JsonSerializerOptions options)
+        {
+            var jsonString = JsonSerializer.Serialize(assertions.Subject, options);
+
+            var deserializedJsonDocument = JsonSerializer.Deserialize<JsonDocument>(jsonString, options);
 
             if (deserializedJsonDocument is null)
             {
@@ -52,26 +99,30 @@ namespace FluentAssertions
                 }
             }
 
-            var expectedJsonDocument = JsonDocument.Parse(JsonSerializer.Serialize(expectedJson, JsonSerializationOptions));
+            var expectedJsonDocument = JsonDocument.Parse(JsonSerializer.Serialize(expectedJson, options));
 
             Compare(deserializedJsonDocument!, expectedJsonDocument);
         }
 
-        /// <summary>
-        /// Check if the JSON subject object is deserializable into the specified <paramref name="expectedObject"/> argument.
-        /// </summary>
-        /// <typeparam name="T">Type of the object to deserialize from JSON.</typeparam>
-        /// <param name="assertions"><see cref="ObjectAssertions"/> which contains the JSON object subject to deserialize.</param>
-        /// <param name="expectedObject">Expected object deserialized expected.</param>
-        public static void BeJsonDeserializableInto<T>(this ObjectAssertions assertions, T expectedObject)
+        private static void BeJsonDeserializableIntoCore<T>(this ObjectAssertions assertions, T expectedObject, JsonSerializerOptions options)
         {
-            var jsonText = JsonSerializer.Serialize(assertions.Subject, JsonSerializationOptions);
-            var deserializedObject = JsonSerializer.Deserialize<T>(jsonText, JsonSerializationOptions);
+            var jsonText = JsonSerializer.Serialize(assertions.Subject, options);
+            var deserializedObject = JsonSerializer.Deserialize<T>(jsonText, options);
 
             deserializedObject.Should().BeEquivalentTo(expectedObject, opt =>
             {
                 return opt.Excluding(member => IsIgnoredProperty(member));
             });
+        }
+
+        private static JsonSerializerOptions GetSerializerOptions(JsonSerializerOptions? options)
+        {
+            if (options is null)
+            {
+                return FluentAssertionsJson.Configuration.JsonSerializerOptions;
+            }
+
+            return options;
         }
 
         private static bool IsIgnoredProperty(IMemberInfo member)
