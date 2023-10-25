@@ -8,10 +8,18 @@ namespace FluentAssertions.Json.Tests
 {
     using System.Text.Json;
     using System.Text.Json.Serialization;
+    using PosInformatique.FluentAssertions.Json;
     using Xunit.Sdk;
 
     public class JsonFluentAssertionsExtensionsTest
     {
+        private enum EnumTest
+        {
+            A,
+            B = 100,
+            C = 200,
+        }
+
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
@@ -435,6 +443,113 @@ namespace FluentAssertions.Json.Tests
         }
 
         [Fact]
+        public void BeJsonSerializableInto_WithNoSpecificOptions()
+        {
+            var json = new JsonSerializableClassWithEnum()
+            {
+                Int32Property = 10,
+                EnumProperty = EnumTest.B,
+            };
+
+            json.Should().BeJsonSerializableInto(new
+            {
+                int32_property = 10,
+                enum_property = 100,
+            });
+        }
+
+        [Fact]
+        public void BeJsonSerializableInto_WithSpecificOptions()
+        {
+            var json = new JsonSerializableClassWithEnum()
+            {
+                Int32Property = 10,
+                EnumProperty = EnumTest.B,
+            };
+
+            var options = new JsonSerializerOptions()
+            {
+                Converters =
+                {
+                    new JsonStringEnumConverter(),
+                },
+            };
+
+            json.Should().BeJsonSerializableInto(
+                new
+                {
+                    int32_property = 10,
+                    enum_property = "B",
+                },
+                options);
+        }
+
+        [Fact]
+        public void BeJsonSerializableInto_WithDefaultOptionsChanged()
+        {
+            var oldConfig = FluentAssertionsJson.Configuration;
+
+            FluentAssertionsJson.Configuration = new FluentAssertionsJsonConfiguration();
+            FluentAssertionsJson.Configuration.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+
+            try
+            {
+                var json = new JsonSerializableClassWithEnum()
+                {
+                    Int32Property = 10,
+                    EnumProperty = EnumTest.B,
+                };
+
+                json.Should().BeJsonSerializableInto(new
+                {
+                    int32_property = 10,
+                    enum_property = "B",
+                });
+            }
+            finally
+            {
+                FluentAssertionsJson.Configuration = oldConfig;
+            }
+        }
+
+        [Fact]
+        public void BeJsonSerializableInto_WithDelegateOptions()
+        {
+            var dummyConverter = new DummyJsonConverter();
+
+            var oldConfig = FluentAssertionsJson.Configuration;
+
+            FluentAssertionsJson.Configuration = new FluentAssertionsJsonConfiguration();
+            FluentAssertionsJson.Configuration.JsonSerializerOptions.Converters.Add(dummyConverter);
+
+            try
+            {
+                var json = new JsonSerializableClassWithEnum()
+                {
+                    Int32Property = 10,
+                    EnumProperty = EnumTest.B,
+                };
+
+                json.Should().BeJsonSerializableInto(
+                    new
+                    {
+                        int32_property = 10,
+                        enum_property = "B",
+                    },
+                    opt =>
+                    {
+                        opt.Converters.Should().Contain(dummyConverter);
+                        opt.Converters.Remove(dummyConverter);
+                        opt.Converters.Add(new JsonStringEnumConverter());
+                    });
+            }
+            finally
+            {
+                FluentAssertionsJson.Configuration = oldConfig;
+            }
+        }
+
+        [Fact]
         public void BeJsonDeserializableInto()
         {
             var json = new
@@ -506,6 +621,115 @@ namespace FluentAssertions.Json.Tests
             json.Should().BeJsonDeserializableInto(expectedObject);
         }
 
+        [Fact]
+        public void BeJsonDeserializableInto_WithNoOptions()
+        {
+            var json = new
+            {
+                int32_property = 10,
+                enum_property = 100,
+            };
+
+            json.Should().BeJsonDeserializableInto(
+                new JsonSerializableClassWithEnum()
+                {
+                    Int32Property = 10,
+                    EnumProperty = EnumTest.B,
+                });
+        }
+
+        [Fact]
+        public void BeJsonDeserializableInto_WithSpecificOptions()
+        {
+            var json = new
+            {
+                int32_property = 10,
+                enum_property = "B",
+            };
+
+            var options = new JsonSerializerOptions()
+            {
+                Converters =
+                {
+                    new JsonStringEnumConverter(),
+                },
+            };
+
+            json.Should().BeJsonDeserializableInto(
+                new JsonSerializableClassWithEnum()
+                {
+                    Int32Property = 10,
+                    EnumProperty = EnumTest.B,
+                },
+                options);
+        }
+
+        [Fact]
+        public void BeJsonDeserializableInto_WithDefaultGlobalOptions()
+        {
+            var oldConfig = FluentAssertionsJson.Configuration;
+
+            FluentAssertionsJson.Configuration = new FluentAssertionsJsonConfiguration();
+            FluentAssertionsJson.Configuration.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+
+            try
+            {
+                var json = new
+                {
+                    int32_property = 10,
+                    enum_property = "B",
+                };
+
+                json.Should().BeJsonDeserializableInto(
+                    new JsonSerializableClassWithEnum()
+                    {
+                        Int32Property = 10,
+                        EnumProperty = EnumTest.B,
+                    });
+            }
+            finally
+            {
+                FluentAssertionsJson.Configuration = oldConfig;
+            }
+        }
+
+        [Fact]
+        public void BeJsonDeserializableInto_WithDelegateOptions()
+        {
+            var dummyConverter = new DummyJsonConverter();
+
+            var oldConfig = FluentAssertionsJson.Configuration;
+
+            FluentAssertionsJson.Configuration = new FluentAssertionsJsonConfiguration();
+            FluentAssertionsJson.Configuration.JsonSerializerOptions.Converters.Add(dummyConverter);
+
+            try
+            {
+                var json = new
+                {
+                    int32_property = 10,
+                    enum_property = "B",
+                };
+
+                json.Should().BeJsonDeserializableInto(
+                    new JsonSerializableClassWithEnum()
+                    {
+                        Int32Property = 10,
+                        EnumProperty = EnumTest.B,
+                    },
+                    opt =>
+                    {
+                        opt.Converters.Should().Contain(dummyConverter);
+                        opt.Converters.Remove(dummyConverter);
+                        opt.Converters.Add(new JsonStringEnumConverter());
+                    });
+            }
+            finally
+            {
+                FluentAssertionsJson.Configuration = oldConfig;
+            }
+        }
+
         private class JsonSerializableClass
         {
             [JsonPropertyName("string_property")]
@@ -549,6 +773,28 @@ namespace FluentAssertions.Json.Tests
             {
                 get => throw new NotImplementedException();
                 set => throw new NotImplementedException();
+            }
+        }
+
+        private class JsonSerializableClassWithEnum
+        {
+            [JsonPropertyName("int32_property")]
+            public int Int32Property { get; set; }
+
+            [JsonPropertyName("enum_property")]
+            public EnumTest EnumProperty { get; set; }
+        }
+
+        private class DummyJsonConverter : JsonConverter<string>
+        {
+            public override string Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+            {
+                throw new NotImplementedException();
+            }
+
+            public override void Write(Utf8JsonWriter writer, string value, JsonSerializerOptions options)
+            {
+                throw new NotImplementedException();
             }
         }
     }
