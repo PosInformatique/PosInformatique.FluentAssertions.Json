@@ -799,6 +799,89 @@ namespace FluentAssertions.Json.Tests
             }
         }
 
+        [Fact]
+        public void BeJsonDeserializableInto_WithAnonymousArray()
+        {
+            var json = new[]
+            {
+                new
+                {
+                    X = 1,
+                    Y = 2,
+                },
+                new
+                {
+                    X = 3,
+                    Y = 4,
+                },
+            };
+
+            json.Should().BeJsonDeserializableInto(
+                new[]
+                {
+                    new BasePoint() { X = 1, Y = 2 },
+                    new BasePoint() { X = 3, Y = 4 },
+                });
+        }
+
+        [Fact]
+        public void BeJsonDeserializableInto_WithAnonymousArray_WithOptions()
+        {
+            var json = new[]
+            {
+                new
+                {
+                    x = 1,
+                    y = 2,
+                },
+                new
+                {
+                    x = 3,
+                    y = 4,
+                },
+            };
+
+            json.Should().BeJsonDeserializableInto(
+                new[]
+                {
+                    new BasePoint() { X = 1, Y = 2 },
+                    new BasePoint() { X = 3, Y = 4 },
+                },
+                new JsonSerializerOptions()
+                {
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                });
+        }
+
+        [Fact]
+        public void BeJsonDeserializableInto_WithAnonymousArray_WithOptionsConfigure()
+        {
+            var json = new[]
+            {
+                new
+                {
+                    x = 1,
+                    y = 2,
+                },
+                new
+                {
+                    x = 3,
+                    y = 4,
+                },
+            };
+
+            json.Should().BeJsonDeserializableInto(
+                new[]
+                {
+                    new BasePoint() { X = 1, Y = 2 },
+                    new BasePoint() { X = 3, Y = 4 },
+                },
+                opt =>
+                {
+                    opt.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+                });
+        }
+
         private class JsonSerializableClass
         {
             [JsonPropertyName("string_property")]

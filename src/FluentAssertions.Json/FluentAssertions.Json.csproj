@@ -13,6 +13,7 @@
     <PackageReleaseNotes>
       1.2.0
       - Add new override BeJsonSerializableInto() method to test polymorphism serialization with discriminator JSON property.
+      - Add the support to assert the deserialization of root JSON array.
 
       1.1.0
       - Allows to configure the JsonSerializationOptions globally and in specific assertions calls.

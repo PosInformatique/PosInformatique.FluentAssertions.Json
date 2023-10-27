@@ -9,6 +9,7 @@ namespace FluentAssertions
     using System.Reflection;
     using System.Text.Json;
     using System.Text.Json.Serialization;
+    using FluentAssertions.Collections;
     using FluentAssertions.Common;
     using FluentAssertions.Equivalency;
     using FluentAssertions.Primitives;
@@ -96,7 +97,22 @@ namespace FluentAssertions
         /// will be used.</param>
         public static void BeJsonDeserializableInto<T>(this ObjectAssertions assertions, T expectedObject, JsonSerializerOptions? options = null)
         {
-            BeJsonDeserializableIntoCore(assertions, expectedObject, GetSerializerOptions(options));
+            BeJsonDeserializableIntoCore(assertions.Subject, expectedObject, GetSerializerOptions(options));
+        }
+
+        /// <summary>
+        /// Check if the JSON subject collection is deserializable into the specified <paramref name="expectedObject"/> argument.
+        /// </summary>
+        /// <typeparam name="TElement">Type of the element of the collection to check the JSON deserialization.</typeparam>
+        /// <typeparam name="T">Type of the object to deserialize from JSON.</typeparam>
+        /// <param name="assertions"><see cref="ObjectAssertions"/> which contains the JSON collection subject to deserialize.</param>
+        /// <param name="expectedObject">Expected collection deserialized expected.</param>
+        /// <param name="options"><see cref="JsonSerializerOptions"/> to use to assert the deserialization. If not specified
+        /// the default <see cref="IFluentAssertionsJsonConfiguration.JsonSerializerOptions"/> of the <see cref="FluentAssertionsJson.Configuration"/>
+        /// will be used.</param>
+        public static void BeJsonDeserializableInto<TElement, T>(this GenericCollectionAssertions<TElement> assertions, T expectedObject, JsonSerializerOptions? options = null)
+        {
+            BeJsonDeserializableIntoCore(assertions.Subject, expectedObject, GetSerializerOptions(options));
         }
 
         /// <summary>
@@ -113,10 +129,28 @@ namespace FluentAssertions
 
             configureOptions(optionsCopy);
 
-            BeJsonDeserializableIntoCore(assertions, expectedObject, optionsCopy);
+            BeJsonDeserializableIntoCore(assertions.Subject, expectedObject, optionsCopy);
         }
 
-        private static void BeJsonSerializableIntoCore<T>(this ObjectAssertions assertions, object? expectedJson, JsonSerializerOptions options)
+        /// <summary>
+        /// Check if the JSON subject collection is deserializable into the specified <paramref name="expectedObject"/> argument.
+        /// </summary>
+        /// <typeparam name="TElement">Type of the element of the collection to check the JSON deserialization.</typeparam>
+        /// <typeparam name="T">Type of the object to deserialize from JSON.</typeparam>
+        /// <param name="assertions"><see cref="ObjectAssertions"/> which contains the JSON collection subject to deserialize.</param>
+        /// <param name="expectedObject">Expected collection deserialized expected.</param>
+        /// <param name="configureOptions">Allows to change the default <see cref="IFluentAssertionsJsonConfiguration.JsonSerializerOptions"/>
+        /// of the <see cref="FluentAssertionsJson.Configuration"/> used to assert the deserialization.</param>
+        public static void BeJsonDeserializableInto<TElement, T>(this GenericCollectionAssertions<TElement> assertions, T expectedObject, Action<JsonSerializerOptions> configureOptions)
+        {
+            var optionsCopy = new JsonSerializerOptions(FluentAssertionsJson.Configuration.JsonSerializerOptions);
+
+            configureOptions(optionsCopy);
+
+            BeJsonDeserializableIntoCore(assertions.Subject, expectedObject, optionsCopy);
+        }
+
+        private static void BeJsonSerializableIntoCore<T>(ObjectAssertions assertions, object? expectedJson, JsonSerializerOptions options)
         {
             var jsonString = JsonSerializer.Serialize((T)assertions.Subject, options);
 
@@ -139,9 +173,9 @@ namespace FluentAssertions
             Compare(deserializedJsonDocument!, expectedJsonDocument);
         }
 
-        private static void BeJsonDeserializableIntoCore<T>(this ObjectAssertions assertions, T expectedObject, JsonSerializerOptions options)
+        private static void BeJsonDeserializableIntoCore<T>(object subject, T expectedObject, JsonSerializerOptions options)
         {
-            var jsonText = JsonSerializer.Serialize(assertions.Subject, options);
+            var jsonText = JsonSerializer.Serialize(subject, options);
             var deserializedObject = JsonSerializer.Deserialize<T>(jsonText, options);
 
             deserializedObject.Should().BeEquivalentTo(expectedObject, opt =>
