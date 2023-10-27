@@ -618,6 +618,29 @@ namespace FluentAssertions.Json.Tests
                 });
         }
 
+        [Theory]
+        [InlineData(1234)]
+        [InlineData("The string")]
+        public void BeJsonSerializableInto_WithObjectProperty(object value)
+        {
+            var obj = new ClassWithObjectProperty()
+            {
+                Inner = new InnerClassWithObjectProperty()
+                {
+                    ObjectProperty = value,
+                },
+            };
+
+            obj.Should().BeJsonSerializableInto(
+                new
+                {
+                    inner = new
+                    {
+                        object_property = value,
+                    },
+                });
+        }
+
         [Fact]
         public void BeJsonDeserializableInto()
         {
@@ -882,6 +905,139 @@ namespace FluentAssertions.Json.Tests
                 });
         }
 
+        [Theory]
+        [InlineData(1234, 1234)]
+        [InlineData(1234, 1234.0)]
+        [InlineData(1234.0, 1234)]
+        [InlineData("The string", "The string")]
+        [InlineData(12.32, 12.32)]
+        public void BeJsonDeserializableInto_WithObjectProperty(object value, object expectedValue)
+        {
+            var json = new
+            {
+                inner = new
+                {
+                    object_property = value,
+                },
+            };
+
+            json.Should().BeJsonDeserializableInto(new ClassWithObjectProperty()
+            {
+                Inner = new InnerClassWithObjectProperty()
+                {
+                    ObjectProperty = expectedValue,
+                },
+            });
+        }
+
+        [Theory]
+        [InlineData(1234)]
+        [InlineData(12.34)]
+        public void BeJsonDeserializableInto_WithObjectProperty_Number_Different(object value)
+        {
+            var json = new
+            {
+                inner = new
+                {
+                    object_property = value,
+                },
+            };
+
+            var act = () =>
+            {
+                json.Should().BeJsonDeserializableInto(new ClassWithObjectProperty()
+                {
+                    Inner = new InnerClassWithObjectProperty()
+                    {
+                        ObjectProperty = 8888,
+                    },
+                });
+            };
+
+            act.Should().ThrowExactly<XunitException>()
+                .WithMessage($"$.inner.object_property: Expected '8888' instead of '{value}'.");
+        }
+
+        [Theory]
+        [InlineData(1234)]
+        [InlineData(12.34)]
+        public void BeJsonDeserializableInto_WithObjectProperty_Number_WrongType(object value)
+        {
+            var json = new
+            {
+                inner = new
+                {
+                    object_property = value,
+                },
+            };
+
+            var act = () =>
+            {
+                json.Should().BeJsonDeserializableInto(new ClassWithObjectProperty()
+                {
+                    Inner = new InnerClassWithObjectProperty()
+                    {
+                        ObjectProperty = "Other type",
+                    },
+                });
+            };
+
+            act.Should().ThrowExactly<XunitException>()
+                .WithMessage($"$.inner.object_property: Expected 'Other type' instead of '{value}'.");
+        }
+
+        [Fact]
+        public void BeJsonDeserializableInto_WithObjectProperty_String_Different()
+        {
+            var json = new
+            {
+                inner = new
+                {
+                    object_property = "The actual string",
+                },
+            };
+
+            var act = () =>
+            {
+                json.Should().BeJsonDeserializableInto(new ClassWithObjectProperty()
+                {
+                    Inner = new InnerClassWithObjectProperty()
+                    {
+                        ObjectProperty = "The expected string",
+                    },
+                });
+            };
+
+            act.Should().ThrowExactly<XunitException>()
+                .WithMessage("$.inner.object_property: Expected 'The expected string' instead of 'The actual string'.");
+        }
+
+        [Fact]
+        public void BeJsonDeserializableInto_WithObjectProperty_String_WrongType()
+        {
+            var json = new
+            {
+                inner = new
+                {
+                    object_property = "The actual string",
+                },
+            };
+
+            var act = () =>
+            {
+                json.Should().BeJsonDeserializableInto(new ClassWithObjectProperty()
+                {
+                    Inner = new InnerClassWithObjectProperty()
+                    {
+                        ObjectProperty = 1234,
+                    },
+                });
+            };
+
+            act.Should().ThrowExactly<XunitException>()
+                .WithMessage("$.inner.object_property: Expected '1234' instead of 'The actual string'.");
+        }
+
         private class JsonSerializableClass
         {
             [JsonPropertyName("string_property")]
@@ -965,6 +1121,18 @@ namespace FluentAssertions.Json.Tests
         {
             [JsonPropertyOrder(3)]
             public int Z { get; set; }
+        }
+
+        private class ClassWithObjectProperty
+        {
+            [JsonPropertyName("inner")]
+            public InnerClassWithObjectProperty Inner { get; set; }
+        }
+
+        private class InnerClassWithObjectProperty
+        {
+            [JsonPropertyName("object_property")]
+            public object ObjectProperty { get; set; }
         }
     }
 }

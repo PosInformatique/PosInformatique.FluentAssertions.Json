@@ -180,8 +180,69 @@ namespace FluentAssertions
 
             deserializedObject.Should().BeEquivalentTo(expectedObject, opt =>
             {
+                opt.Using<object>(ctx =>
+                {
+                    if (ctx.Subject is JsonElement element)
+                    {
+                        var path = ReflectionHelper.GetJsonPath(deserializedObject!.GetType(), ctx.SelectedNode.PathAndName);
+
+                        AssertJsonElement(path, element, ctx.Expectation);
+                    }
+                })
+                .When(member => member.Type == typeof(object));
+
                 return opt.Excluding(member => IsIgnoredProperty(member));
             });
+        }
+
+        private static void AssertJsonElement(string path, JsonElement subject, object expectedValue)
+        {
+            if (subject.ValueKind == JsonValueKind.Number)
+            {
+                var value = subject.GetDouble();
+                var expectedDoubleValue = GetNumberValue(path, expectedValue, value);
+
+                if (value != expectedDoubleValue)
+                {
+                    Services.ThrowException($"{path}: Expected '{expectedValue}' instead of '{value}'.");
+                }
+            }
+            else if (subject.ValueKind == JsonValueKind.String)
+            {
+                var value = subject.GetString();
+
+                if (expectedValue is string stringValue)
+                {
+                    if (value != stringValue)
+                    {
+                        Services.ThrowException($"{path}: Expected '{expectedValue}' instead of '{value}'.");
+                    }
+                }
+                else
+                {
+                    Services.ThrowException($"{path}: Expected '{expectedValue}' instead of '{value}'.");
+                }
+            }
+            else
+            {
+                throw new NotSupportedException();
+            }
+        }
+
+        private static double GetNumberValue(string path, object value, double actualValue)
+        {
+            if (value is double doubleValue)
+            {
+                return doubleValue;
+            }
+            else if (value is int intValue)
+            {
+                return Convert.ToDouble(intValue);
+            }
+
+            Services.ThrowException($"{path}: Expected '{value}' instead of '{actualValue}'.");
+
+            throw new NotSupportedException("Must not be called");
         }
 
         private static JsonSerializerOptions GetSerializerOptions(JsonSerializerOptions? options)
