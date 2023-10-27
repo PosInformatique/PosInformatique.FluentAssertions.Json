@@ -30,7 +30,23 @@ namespace FluentAssertions
         /// will be used.</param>
         public static void BeJsonSerializableInto(this ObjectAssertions assertions, object? expectedJson, JsonSerializerOptions? options = null)
         {
-            BeJsonSerializableIntoCore(assertions, expectedJson, GetSerializerOptions(options));
+            BeJsonSerializableIntoCore<object>(assertions, expectedJson, GetSerializerOptions(options));
+        }
+
+        /// <summary>
+        /// Check if the subject object in <paramref name="assertions"/> instance is serializable into the JSON object
+        /// specified by the <paramref name="expectedJson"/>.
+        /// </summary>
+        /// <typeparam name="TBase">Base class type of the subject to use for the serialization. Defines explicitely the base type
+        /// to assert the JSON serialization with base class using polymorphisme discriminator.</typeparam>
+        /// <param name="assertions"><see cref="ObjectAssertions"/> which contains the object subject to check.</param>
+        /// <param name="expectedJson">The object which represents the raw JSON object expected.</param>
+        /// <param name="options"><see cref="JsonSerializerOptions"/> to use to assert the serialization. If not specified
+        /// the default <see cref="IFluentAssertionsJsonConfiguration.JsonSerializerOptions"/> of the <see cref="FluentAssertionsJson.Configuration"/>
+        /// will be used.</param>
+        public static void BeJsonSerializableInto<TBase>(this ObjectAssertions assertions, object? expectedJson, JsonSerializerOptions? options = null)
+        {
+            BeJsonSerializableIntoCore<TBase>(assertions, expectedJson, GetSerializerOptions(options));
         }
 
         /// <summary>
@@ -47,7 +63,26 @@ namespace FluentAssertions
 
             configureOptions(optionsCopy);
 
-            BeJsonSerializableIntoCore(assertions, expectedJson, optionsCopy);
+            BeJsonSerializableIntoCore<object>(assertions, expectedJson, optionsCopy);
+        }
+
+        /// <summary>
+        /// Check if the subject object in <paramref name="assertions"/> instance is serializable into the JSON object
+        /// specified by the <paramref name="expectedJson"/>.
+        /// </summary>
+        /// <typeparam name="TBase">Base class type of the subject to use for the serialization. Defines explicitely the base type
+        /// to assert the JSON serialization with base class using polymorphisme discriminator.</typeparam>
+        /// <param name="assertions"><see cref="ObjectAssertions"/> which contains the object subject to check.</param>
+        /// <param name="expectedJson">The object which represents the raw JSON object expected.</param>
+        /// <param name="configureOptions">Allows to change the default <see cref="IFluentAssertionsJsonConfiguration.JsonSerializerOptions"/>
+        /// of the <see cref="FluentAssertionsJson.Configuration"/> used to assert the serialization.</param>
+        public static void BeJsonSerializableInto<TBase>(this ObjectAssertions assertions, object? expectedJson, Action<JsonSerializerOptions> configureOptions)
+        {
+            var optionsCopy = new JsonSerializerOptions(FluentAssertionsJson.Configuration.JsonSerializerOptions);
+
+            configureOptions(optionsCopy);
+
+            BeJsonSerializableIntoCore<TBase>(assertions, expectedJson, optionsCopy);
         }
 
         /// <summary>
@@ -81,9 +116,9 @@ namespace FluentAssertions
             BeJsonDeserializableIntoCore(assertions, expectedObject, optionsCopy);
         }
 
-        private static void BeJsonSerializableIntoCore(this ObjectAssertions assertions, object? expectedJson, JsonSerializerOptions options)
+        private static void BeJsonSerializableIntoCore<T>(this ObjectAssertions assertions, object? expectedJson, JsonSerializerOptions options)
         {
-            var jsonString = JsonSerializer.Serialize(assertions.Subject, options);
+            var jsonString = JsonSerializer.Serialize((T)assertions.Subject, options);
 
             var deserializedJsonDocument = JsonSerializer.Deserialize<JsonDocument>(jsonString, options);
 

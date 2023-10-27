@@ -8,6 +8,7 @@ namespace FluentAssertions.Json.Tests
 {
     using System.Text.Json;
     using System.Text.Json.Serialization;
+    using Newtonsoft.Json.Serialization;
     using PosInformatique.FluentAssertions.Json;
     using Xunit.Sdk;
 
@@ -550,6 +551,74 @@ namespace FluentAssertions.Json.Tests
         }
 
         [Fact]
+        public void BeJsonSerializableInto_WithPolymorphism()
+        {
+            var point = new ThreeDimensionalPoint()
+            {
+                X = 1,
+                Y = 2,
+                Z = 3,
+            };
+
+            point.Should().BeJsonSerializableInto<BasePoint>(
+                new
+                {
+                    myType = "3d",
+                    X = 1,
+                    Y = 2,
+                    Z = 3,
+                });
+        }
+
+        [Fact]
+        public void BeJsonSerializableInto_WithPolymorphism_WithOptions()
+        {
+            var point = new ThreeDimensionalPoint()
+            {
+                X = 1,
+                Y = 2,
+                Z = 3,
+            };
+
+            point.Should().BeJsonSerializableInto<BasePoint>(
+                new
+                {
+                    myType = "3d",
+                    x = 1,
+                    y = 2,
+                    z = 3,
+                },
+                new JsonSerializerOptions()
+                {
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                });
+        }
+
+        [Fact]
+        public void BeJsonSerializableInto_WithPolymorphism_AndConfigureOptions()
+        {
+            var point = new ThreeDimensionalPoint()
+            {
+                X = 1,
+                Y = 2,
+                Z = 3,
+            };
+
+            point.Should().BeJsonSerializableInto<BasePoint>(
+                new
+                {
+                    myType = "3d",
+                    x = 1,
+                    y = 2,
+                    z = 3,
+                },
+                opt =>
+                {
+                    opt.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+                });
+        }
+
+        [Fact]
         public void BeJsonDeserializableInto()
         {
             var json = new
@@ -796,6 +865,23 @@ namespace FluentAssertions.Json.Tests
             {
                 throw new NotImplementedException();
             }
+        }
+
+        [JsonPolymorphic(TypeDiscriminatorPropertyName = "myType")]
+        [JsonDerivedType(typeof(ThreeDimensionalPoint), typeDiscriminator: "3d")]
+        private class BasePoint
+        {
+            [JsonPropertyOrder(1)]
+            public int X { get; set; }
+
+            [JsonPropertyOrder(2)]
+            public int Y { get; set; }
+        }
+
+        private class ThreeDimensionalPoint : BasePoint
+        {
+            [JsonPropertyOrder(3)]
+            public int Z { get; set; }
         }
     }
 }

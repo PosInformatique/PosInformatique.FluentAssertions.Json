@@ -137,6 +137,84 @@ public void Deserialization()
 }
 ```
 
+## Test polymorphisme serialization with property discriminator
+With the .NET 7.0 version of the `System.Text.Json` it is possible to serialize and deserialize JSON object
+with property discriminators for polymorphism scenario
+(See the [How to serialize properties of derived classes with System.Text.Json](https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/polymorphism?pivots=dotnet-7-0))
+topic for more information.
+> It is possible also to use the polymorphism JSON serialization with previous version of .NET using a custom `JsonConverter`.
+See the [How to serialize properties of derived classes with System.Text.Json (.NET 6.0)](https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/polymorphism?pivots=dotnet-6-0)
+for more information.
+
+Imagine you have the following classes hierarchy:
+
+```csharp
+[JsonPolymorphic(TypeDiscriminatorPropertyName = "type")]
+[JsonDerivedType(typeof(ThreeDimensionalPoint), typeDiscriminator: "3d")]
+private class BasePoint
+{
+    [JsonPropertyOrder(1)]
+    public int X { get; set; }
+
+    [JsonPropertyOrder(2)]
+    public int Y { get; set; }
+}
+
+private class ThreeDimensionalPoint : BasePoint
+{
+    [JsonPropertyOrder(3)]
+    public int Z { get; set; }
+}
+```
+
+And you would like to assert that the serialization of `ThreeDimensionalPoint` instance generate the following JSON content
+when calling the `JsonSerializer.Serialize<T>()` method with `BasePoint` as generic argument:
+
+```csharp
+var point = new ThreeDimensionalPoint()
+{
+    X = 1,
+    Y = 2,
+    Z = 3,
+}
+
+var json = JsonSerializer.Serialize<BasePoint>();
+```
+
+```json
+{
+    "type": "3d",
+    "X": 1,
+    "Y": 2,
+    "Z": 3, 
+}
+```
+
+This is the assertion to write using the [PosInformatique.FluentAssertions.Json library](https://www.nuget.org/packages/PosInformatique.FluentAssertions.Json/):
+
+
+```csharp
+point.Should().BeJsonSerializableInto<BasePoint>(new
+{
+    myType = "3d",
+    X = 1,
+    Y = 2,
+    Z = 3,
+});
+```
+
+> **NOTE:** If you don't specify the `BasePoint` generic argument, the library will use the default behavior of the `JsonSerializer.Serialize()` 
+(with no generic argument), which will generate (and assert!) the following JSON object:
+>```json
+>{
+>    "X": 1,
+>    "Y": 2,
+>    "Z": 3, 
+>}
+>```
+> As you can see there is no discriminator property generate because the .NET `JsonSerializer.Serialize()` will use the type of the instance
+> instead of an explicit type of derived class.
+
 ## Change the JsonSerializer options
 
 ### Change globally the JsonSerializer options
