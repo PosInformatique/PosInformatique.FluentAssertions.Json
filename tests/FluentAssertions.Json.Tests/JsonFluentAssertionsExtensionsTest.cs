@@ -618,6 +618,30 @@ namespace FluentAssertions.Json.Tests
                 });
         }
 
+        [Fact]
+        public void BeJsonSerializableInto_WithPolymorphism_WithWrongInheritance()
+        {
+            var point = new ThreeDimensionalPoint()
+            {
+                X = 1,
+                Y = 2,
+                Z = 3,
+            };
+
+            var act = () =>
+            {
+                point.Should().BeJsonSerializableInto<string>(
+                    new
+                    {
+                        myType = "3d",
+                    });
+            };
+
+            act.Should().ThrowExactly<ArgumentException>()
+                .WithMessage("The 'System.String' class is not a base class of the 'FluentAssertions.Json.Tests.JsonFluentAssertionsExtensionsTest+ThreeDimensionalPoint' type. (Parameter 'TBase')")
+                .And.ParamName.Should().Be("TBase");
+        }
+
         [Theory]
         [InlineData(1234)]
         [InlineData("The string")]

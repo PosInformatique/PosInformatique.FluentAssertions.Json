@@ -150,9 +150,14 @@ namespace FluentAssertions
             BeJsonDeserializableIntoCore(assertions.Subject, expectedObject, optionsCopy);
         }
 
-        private static void BeJsonSerializableIntoCore<T>(ObjectAssertions assertions, object? expectedJson, JsonSerializerOptions options)
+        private static void BeJsonSerializableIntoCore<TBase>(ObjectAssertions assertions, object? expectedJson, JsonSerializerOptions options)
         {
-            var jsonString = JsonSerializer.Serialize((T)assertions.Subject, options);
+            if (assertions.Subject is not null && assertions.Subject is not TBase)
+            {
+                throw new ArgumentException($"The '{typeof(TBase).FullName}' class is not a base class of the '{assertions.Subject.GetType().FullName}' type.", nameof(TBase));
+            }
+
+            var jsonString = JsonSerializer.Serialize((TBase)assertions.Subject!, options);
 
             var deserializedJsonDocument = JsonSerializer.Deserialize<JsonDocument>(jsonString, options);
 
