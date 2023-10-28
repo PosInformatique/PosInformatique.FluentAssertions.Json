@@ -148,7 +148,7 @@ namespace FluentAssertions.Json.Tests
             };
 
             act.Should().ThrowExactly<XunitException>()
-                .WithMessage($"$.boolean_property: Expected property to be '{expectedValueString}' type instead of '{actualValueString}' type.");
+                .WithMessage($"$.boolean_property: Expected '{expectedValueString}' instead of '{actualValueString}'.");
         }
 
         [Fact]
@@ -342,7 +342,7 @@ namespace FluentAssertions.Json.Tests
         }
 
         [Fact]
-        public void BeJsonSerializableInto_PropertyTypeDifferent()
+        public void BeJsonSerializableInto_PropertyTypeDifferent_String()
         {
             var json = new JsonSerializableClass()
             {
@@ -359,6 +359,126 @@ namespace FluentAssertions.Json.Tests
 
             act.Should().ThrowExactly<XunitException>()
                 .WithMessage("$.string_property: Expected property to be 'Object' type instead of 'String' type.");
+        }
+
+        [Theory]
+        [InlineData("Expected string", "String")]
+        [InlineData(null, "Null")]
+        public void BeJsonSerializableInto_PropertyTypeDifferent_Number(object expectedValue, string expectedTypeMessage)
+        {
+            var json = new JsonSerializableClass()
+            {
+                StringProperty = "String value",
+                Int32Property = 1234,
+            };
+
+            var act = () =>
+            {
+                json.Should().BeJsonSerializableInto(new
+                {
+                    string_property = "String value",
+                    int32_property = expectedValue,
+                });
+            };
+
+            act.Should().ThrowExactly<XunitException>()
+                .WithMessage($"$.int32_property: Expected property to be '{expectedTypeMessage}' type instead of 'Number' type.");
+        }
+
+        [Theory]
+        [InlineData(true, "True")]
+        [InlineData(false, "False")]
+        public void BeJsonSerializableInto_PropertyTypeDifferent_Boolean(bool value, string insteadOfMessageString)
+        {
+            var json = new JsonSerializableClass()
+            {
+                StringProperty = "String value",
+                Int32Property = 1234,
+                BooleanProperty = value,
+            };
+
+            var act = () =>
+            {
+                json.Should().BeJsonSerializableInto(new
+                {
+                    string_property = "String value",
+                    int32_property = 1234,
+                    boolean_property = new { },
+                });
+            };
+
+            act.Should().ThrowExactly<XunitException>()
+                .WithMessage($"$.boolean_property: Expected property to be 'Object' type instead of '{insteadOfMessageString}' type.");
+        }
+
+        [Theory]
+        [InlineData("String value", "String")]
+        [InlineData(12.34, "Number")]
+        [InlineData(1234, "Number")]
+        [InlineData(true, "True")]
+        [InlineData(false, "False")]
+        [InlineData(null, "Null")]
+        public void BeJsonSerializableInto_PropertyTypeDifferent_Object(object value, string expectedKindMessage)
+        {
+            var json = new JsonSerializableClass()
+            {
+                StringProperty = "String value",
+                Int32Property = 1234,
+                BooleanProperty = true,
+                NullProperty = null,
+                InnerObject = new JsonSerializableClassInnerObject(),
+            };
+
+            var act = () =>
+            {
+                json.Should().BeJsonSerializableInto(new
+                {
+                    string_property = "String value",
+                    int32_property = 1234,
+                    boolean_property = true,
+                    null_property = (int?)null,
+                    inner_object = value,
+                });
+            };
+
+            act.Should().ThrowExactly<XunitException>()
+                .WithMessage($"$.inner_object: Expected property to be '{expectedKindMessage}' type instead of 'Object' type.");
+        }
+
+        [Theory]
+        [InlineData("String value", "String")]
+        [InlineData(12.34, "Number")]
+        [InlineData(1234, "Number")]
+        [InlineData(true, "True")]
+        [InlineData(false, "False")]
+        [InlineData(null, "Null")]
+        public void BeJsonSerializableInto_PropertyTypeDifferent_Array(object value, string expectedKindMessage)
+        {
+            var json = new JsonSerializableClass()
+            {
+                StringProperty = "String value",
+                Int32Property = 1234,
+                BooleanProperty = true,
+                NullProperty = null,
+                InnerObject = new JsonSerializableClassInnerObject() { InnerStringProperty = "Inner string" },
+                CollectionInt32 = new List<int> { 1, 2 },
+            };
+
+            var act = () =>
+            {
+                json.Should().BeJsonSerializableInto(new
+                {
+                    string_property = "String value",
+                    int32_property = 1234,
+                    boolean_property = true,
+                    null_property = (int?)null,
+                    inner_object = new { inner_string_property = "Inner string" },
+                    collection_int = value,
+                });
+            };
+
+            act.Should().ThrowExactly<XunitException>()
+                .WithMessage($"$.collection_int: Expected property to be '{expectedKindMessage}' type instead of 'Array' type.");
         }
 
         [Fact]
@@ -1007,7 +1127,7 @@ namespace FluentAssertions.Json.Tests
             };
 
             act.Should().ThrowExactly<XunitException>()
-                .WithMessage($"$.inner.object_property: Expected 'Other type' instead of '{value}'.");
+                .WithMessage($"$.inner.object_property: Expected property to be 'String' type instead of 'Number' type.");
         }
 
         [Fact]
@@ -1059,7 +1179,7 @@ namespace FluentAssertions.Json.Tests
             };
 
             act.Should().ThrowExactly<XunitException>()
-                .WithMessage("$.inner.object_property: Expected '1234' instead of 'The actual string'.");
+                .WithMessage("$.inner.object_property: Expected property to be 'Number' type instead of 'String' type.");
         }
 
         private class JsonSerializableClass

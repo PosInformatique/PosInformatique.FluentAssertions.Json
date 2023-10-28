@@ -173,9 +173,12 @@ namespace FluentAssertions
                 }
             }
 
-            var expectedJsonDocument = JsonDocument.Parse(JsonSerializer.Serialize(expectedJson, options));
+            var errors = JsonElementComparer.Compare(deserializedJsonDocument!, expectedJson);
 
-            Compare(deserializedJsonDocument!, expectedJsonDocument);
+            if (errors.Any())
+            {
+                Services.ThrowException(errors.First());
+            }
         }
 
         private static void BeJsonDeserializableIntoCore<T>(object subject, T expectedObject, JsonSerializerOptions options)
@@ -191,63 +194,18 @@ namespace FluentAssertions
                     {
                         var path = ReflectionHelper.GetJsonPath(deserializedObject!.GetType(), ctx.SelectedNode.PathAndName);
 
-                        AssertJsonElement(path, element, ctx.Expectation);
+                        var errors = JsonElementComparer.Compare(element, ctx.Expectation, path);
+
+                        if (errors.Any())
+                        {
+                            Services.ThrowException(errors.First());
+                        }
                     }
                 })
                 .When(member => member.Type == typeof(object));
 
                 return opt.Excluding(member => IsIgnoredProperty(member));
             });
-        }
-
-        private static void AssertJsonElement(string path, JsonElement subject, object expectedValue)
-        {
-            if (subject.ValueKind == JsonValueKind.Number)
-            {
-                var value = subject.GetDouble();
-                var expectedDoubleValue = GetNumberValue(path, expectedValue, value);
-
-                if (value != expectedDoubleValue)
-                {
-                    Services.ThrowException($"{path}: Expected '{expectedValue}' instead of '{value}'.");
-                }
-            }
-            else if (subject.ValueKind == JsonValueKind.String)
-            {
-                var value = subject.GetString();
-
-                if (expectedValue is string stringValue)
-                {
-                    if (value != stringValue)
-                    {
-                        Services.ThrowException($"{path}: Expected '{expectedValue}' instead of '{value}'.");
-                    }
-                }
-                else
-                {
-                    Services.ThrowException($"{path}: Expected '{expectedValue}' instead of '{value}'.");
-                }
-            }
-            else
-            {
-                throw new NotSupportedException();
-            }
-        }
-
-        private static double GetNumberValue(string path, object value, double actualValue)
-        {
-            if (value is double doubleValue)
-            {
-                return doubleValue;
-            }
-            else if (value is int intValue)
-            {
-                return Convert.ToDouble(intValue);
-            }
-
-            Services.ThrowException($"{path}: Expected '{value}' instead of '{actualValue}'.");
-
-            throw new NotSupportedException("Must not be called");
         }
 
         private static JsonSerializerOptions GetSerializerOptions(JsonSerializerOptions? options)
@@ -275,124 +233,6 @@ namespace FluentAssertions
             }
 
             return false;
-        }
-
-        private static void Compare(JsonDocument document, JsonDocument expected)
-        {
-            var path = new Stack<string>();
-
-            path.Push("$");
-
-            Compare(document.RootElement, expected.RootElement, path);
-
-            path.Pop();
-        }
-
-        private static void Compare(JsonElement element, JsonElement expected, Stack<string> path)
-        {
-            if (element.ValueKind != expected.ValueKind)
-            {
-                Services.ThrowException($"{GetPath(path)}: Expected property to be '{expected.ValueKind}' type instead of '{element.ValueKind}' type.");
-            }
-            else if (element.ValueKind == JsonValueKind.String)
-            {
-                var value = element.GetString();
-                var expectedValue = expected.GetString();
-
-                if (value != expectedValue)
-                {
-                    Services.ThrowException($"{GetPath(path)}: Expected '{expectedValue}' instead of '{value}'.");
-                }
-            }
-            else if (element.ValueKind == JsonValueKind.Number)
-            {
-                var value = element.GetDouble();
-                var expectedValue = expected.GetDouble();
-
-                if (value != expectedValue)
-                {
-                    Services.ThrowException($"{GetPath(path)}: Expected '{expectedValue}' instead of '{value}'.");
-                }
-            }
-            else if (element.ValueKind == JsonValueKind.Object)
-            {
-                var expectedPropertyEnumerator = expected.EnumerateObject();
-
-                foreach (var property in element.EnumerateObject())
-                {
-                    if (!expectedPropertyEnumerator.MoveNext())
-                    {
-                        Services.ThrowException($"{GetPath(path)}: Expected no property but found '{property.Name}' property.");
-                    }
-
-                    var expectedProperty = expectedPropertyEnumerator.Current;
-
-                    if (property.Name != expectedProperty.Name)
-                    {
-                        Services.ThrowException($"{GetPath(path)}: Expected property with the '{expectedProperty.Name}' name but found '{property.Name}' instead.");
-                    }
-
-                    path.Push("." + property.Name);
-
-                    Compare(property.Value, expectedProperty.Value, path);
-
-                    path.Pop();
-                }
-
-                if (expectedPropertyEnumerator.MoveNext())
-                {
-                    Services.ThrowException($"{GetPath(path)}: Expected '{expectedPropertyEnumerator.Current.Name}' property but found no property.");
-                }
-            }
-            else if (element.ValueKind == JsonValueKind.Array)
-            {
-                var expectedArrayEnumerator = expected.EnumerateArray();
-                var index = 0;
-
-                foreach (var item in element.EnumerateArray())
-                {
-                    if (!expectedArrayEnumerator.MoveNext())
-                    {
-                        var actualCount = element.EnumerateArray().Count();
-
-                        Services.ThrowException($"{GetPath(path)}: Expected {index} item(s) but found {actualCount}.");
-                    }
-
-                    var expectedItem = expectedArrayEnumerator.Current;
-
-                    path.Push($"[{index}]");
-
-                    Compare(item, expectedItem, path);
-
-                    path.Pop();
-
-                    index++;
-                }
-
-                if (expectedArrayEnumerator.MoveNext())
-                {
-                    var expectedCount = expected.EnumerateArray().Count();
-
-                    Services.ThrowException($"{GetPath(path)}: Expected {expectedCount} item(s) but found {index}.");
-                }
-            }
-            else if (element.ValueKind == JsonValueKind.True)
-            {
-                return;
-            }
-            else if (element.ValueKind == JsonValueKind.False)
-            {
-                return;
-            }
-            else
-            {
-                return;
-            }
-        }
-
-        private static string GetPath(IEnumerable<string> path)
-        {
-            return string.Concat(path.Reverse());
         }
     }
 }

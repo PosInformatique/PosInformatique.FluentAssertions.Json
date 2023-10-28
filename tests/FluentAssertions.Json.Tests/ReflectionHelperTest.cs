@@ -6,6 +6,7 @@
 
 namespace PosInformatique.FluentAssertions.Json.Tests.Tests
 {
+    using System.Text.Json;
     using System.Text.Json.Serialization;
     using global::FluentAssertions;
 
@@ -24,6 +25,34 @@ namespace PosInformatique.FluentAssertions.Json.Tests.Tests
             ReflectionHelper.GetJsonPath(typeof(RootObject), "PropertyRoot.PropertyRoot.InnerObject.Property1").Should().Be("$.root.root.InnerObject.Property1");
             ReflectionHelper.GetJsonPath(typeof(RootObject), "PropertyRoot.PropertyRoot.InnerObject.Property2").Should().Be("$.root.root.InnerObject.property_2");
             ReflectionHelper.GetJsonPath(typeof(RootObject), "PropertyRoot").Should().Be("$.root");
+        }
+
+        [Fact]
+        public void GetJsonKind()
+        {
+            ReflectionHelper.GetJsonKind("The string").Should().Be(JsonValueKind.String);
+
+            ReflectionHelper.GetJsonKind(1234).Should().Be(JsonValueKind.Number);
+            ReflectionHelper.GetJsonKind(12.34).Should().Be(JsonValueKind.Number);
+
+            ReflectionHelper.GetJsonKind(new[] { 1 }).Should().Be(JsonValueKind.Array);
+            ReflectionHelper.GetJsonKind(new List<int> { 1 }).Should().Be(JsonValueKind.Array);
+
+            ReflectionHelper.GetJsonKind(new { }).Should().Be(JsonValueKind.Object);
+
+            ReflectionHelper.GetJsonKind(true).Should().Be(JsonValueKind.True);
+            ReflectionHelper.GetJsonKind(false).Should().Be(JsonValueKind.False);
+        }
+
+        [Fact]
+        public void IsNumeric()
+        {
+            ReflectionHelper.IsNumeric(1234).Should().BeTrue();
+            ReflectionHelper.IsNumeric(12.34).Should().BeTrue();
+
+            ReflectionHelper.IsNumeric("Not numeric").Should().BeFalse();
+            ReflectionHelper.IsNumeric(new { }).Should().BeFalse();
+            ReflectionHelper.IsNumeric(new[] { 1 }).Should().BeFalse();
         }
 
         private class RootObject

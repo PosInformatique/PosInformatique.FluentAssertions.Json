@@ -6,11 +6,15 @@
 
 namespace PosInformatique.FluentAssertions.Json
 {
+    using System.Collections;
     using System.Reflection;
+    using System.Text.Json;
     using System.Text.Json.Serialization;
 
     internal static class ReflectionHelper
     {
+        private static readonly Type[] NumericTypes = new[] { typeof(int), typeof(double) };
+
         public static string GetJsonPropertyName(PropertyInfo property)
         {
             var jsonPropertyName = property.GetCustomAttribute<JsonPropertyNameAttribute>();
@@ -39,6 +43,53 @@ namespace PosInformatique.FluentAssertions.Json
             }
 
             return $"$.{string.Join(".", result)}";
+        }
+
+        public static JsonValueKind GetJsonKind(object? value)
+        {
+            if (value is null)
+            {
+                return JsonValueKind.Null;
+            }
+
+            if (value is string)
+            {
+                return JsonValueKind.String;
+            }
+
+            if (IsNumeric(value))
+            {
+                return JsonValueKind.Number;
+            }
+
+            if (value is IEnumerable)
+            {
+                return JsonValueKind.Array;
+            }
+
+            if (value is bool booleanValue)
+            {
+                if (booleanValue)
+                {
+                    return JsonValueKind.True;
+                }
+
+                return JsonValueKind.False;
+            }
+
+            return JsonValueKind.Object;
+        }
+
+        public static bool IsNumeric(object value)
+        {
+            var type = value.GetType();
+
+            if (NumericTypes.Contains(type))
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }
