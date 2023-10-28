@@ -8,6 +8,7 @@ namespace PosInformatique.FluentAssertions.Json
 {
     using System.Collections;
     using System.Reflection;
+    using System.Runtime.InteropServices;
     using System.Text.Json;
     using System.Text.Json.Serialization;
 
@@ -33,13 +34,35 @@ namespace PosInformatique.FluentAssertions.Json
 
             var result = new List<string>();
 
-            foreach (var propertyName in propertyNames)
+            foreach (var p in propertyNames)
             {
+                var propertyName = p;
+
+                // Extract if need an index for properties collection.
+                var indexArray = propertyName.IndexOf("[");
+
+                if (indexArray > 0)
+                {
+                    propertyName = p.Substring(0, indexArray);
+                }
+
                 var property = type.GetProperty(propertyName);
 
                 result.Add(GetJsonPropertyName(property));
 
-                type = property.PropertyType;
+                if (indexArray > 0)
+                {
+                    // Append the "[xxx]" index.
+                    var indexString = p.Substring(indexArray);
+
+                    result[result.Count - 1] = result[result.Count - 1] + indexString;
+
+                    type = GetEnumerableElementType(property.PropertyType);
+                }
+                else
+                {
+                    type = property.PropertyType;
+                }
             }
 
             return $"$.{string.Join(".", result)}";
@@ -90,6 +113,14 @@ namespace PosInformatique.FluentAssertions.Json
             }
 
             return false;
+        }
+
+        private static Type GetEnumerableElementType(Type collectionType)
+        {
+            var enumerableType = collectionType.GetInterface("IEnumerable`1");
+            var elementType = enumerableType.GetGenericArguments()[0];
+
+            return elementType;
         }
     }
 }

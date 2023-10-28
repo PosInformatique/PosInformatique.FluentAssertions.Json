@@ -25,6 +25,9 @@ namespace PosInformatique.FluentAssertions.Json.Tests.Tests
             ReflectionHelper.GetJsonPath(typeof(RootObject), "PropertyRoot.PropertyRoot.InnerObject.Property1").Should().Be("$.root.root.InnerObject.Property1");
             ReflectionHelper.GetJsonPath(typeof(RootObject), "PropertyRoot.PropertyRoot.InnerObject.Property2").Should().Be("$.root.root.InnerObject.property_2");
             ReflectionHelper.GetJsonPath(typeof(RootObject), "PropertyRoot").Should().Be("$.root");
+
+            ReflectionHelper.GetJsonPath(typeof(RootObject), "CollectionImplicitName[0].Property1").Should().Be("$.CollectionImplicitName[0].Property1");
+            ReflectionHelper.GetJsonPath(typeof(RootObject), "CollectionExplicitName[xxx].Property2").Should().Be("$.collection_explicit_name[xxx].property_2");
         }
 
         [Fact]
@@ -61,6 +64,11 @@ namespace PosInformatique.FluentAssertions.Json.Tests.Tests
             public RootObject PropertyRoot { get; set; }
 
             public ObjectWithProperties InnerObject { get; set; }
+
+            public List<ObjectWithProperties> CollectionImplicitName { get; set; }
+
+            [JsonPropertyName("collection_explicit_name")]
+            public List<ObjectWithProperties> CollectionExplicitName { get; set; }
         }
 
         private class ObjectWithProperties

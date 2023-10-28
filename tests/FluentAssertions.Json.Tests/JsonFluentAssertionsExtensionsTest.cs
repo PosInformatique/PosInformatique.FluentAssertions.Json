@@ -1063,6 +1063,17 @@ namespace FluentAssertions.Json.Tests
                 {
                     object_property = value,
                 },
+                collection_of_inner = new[]
+                {
+                    new
+                    {
+                        object_property = value,
+                    },
+                    new
+                    {
+                        object_property = value,
+                    },
+                },
             };
 
             json.Should().BeJsonDeserializableInto(new ClassWithObjectProperty()
@@ -1070,6 +1081,17 @@ namespace FluentAssertions.Json.Tests
                 Inner = new InnerClassWithObjectProperty()
                 {
                     ObjectProperty = expectedValue,
+                },
+                InnerCollection = new List<InnerClassWithObjectProperty>()
+                {
+                    new InnerClassWithObjectProperty()
+                    {
+                        ObjectProperty = expectedValue,
+                    },
+                    new InnerClassWithObjectProperty()
+                    {
+                        ObjectProperty = expectedValue,
+                    },
                 },
             });
         }
@@ -1271,6 +1293,9 @@ namespace FluentAssertions.Json.Tests
         {
             [JsonPropertyName("inner")]
             public InnerClassWithObjectProperty Inner { get; set; }
+
+            [JsonPropertyName("collection_of_inner")]
+            public List<InnerClassWithObjectProperty> InnerCollection { get; set; }
         }
 
         private class InnerClassWithObjectProperty

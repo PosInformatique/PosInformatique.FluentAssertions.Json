@@ -190,6 +190,10 @@ namespace FluentAssertions
             {
                 opt.Using<object>(ctx =>
                 {
+                    // Test if the Subject is not a JsonElement.
+                    // This scenerio happen when deserializing JSON content in .NET object
+                    // which contains "object" property. In this case, the JsonSerializer will put JsonElement in this property.
+                    // So we have to compare the JsonElement with the expected .NET object specified by the developer in the unit tests.
                     if (ctx.Subject is JsonElement element)
                     {
                         var path = ReflectionHelper.GetJsonPath(deserializedObject!.GetType(), ctx.SelectedNode.PathAndName);
