@@ -8,6 +8,7 @@ namespace FluentAssertions.Json.Tests
 {
     using System.Text.Json;
     using System.Text.Json.Serialization;
+    using Newtonsoft.Json.Serialization;
     using PosInformatique.FluentAssertions.Json;
     using Xunit.Sdk;
 
@@ -147,7 +148,7 @@ namespace FluentAssertions.Json.Tests
             };
 
             act.Should().ThrowExactly<XunitException>()
-                .WithMessage($"$.boolean_property: Expected property to be '{expectedValueString}' type instead of '{actualValueString}' type.");
+                .WithMessage($"$.boolean_property: Expected '{expectedValueString}' instead of '{actualValueString}'.");
         }
 
         [Fact]
@@ -341,7 +342,7 @@ namespace FluentAssertions.Json.Tests
         }
 
         [Fact]
-        public void BeJsonSerializableInto_PropertyTypeDifferent()
+        public void BeJsonSerializableInto_PropertyTypeDifferent_String()
         {
             var json = new JsonSerializableClass()
             {
@@ -358,6 +359,126 @@ namespace FluentAssertions.Json.Tests
 
             act.Should().ThrowExactly<XunitException>()
                 .WithMessage("$.string_property: Expected property to be 'Object' type instead of 'String' type.");
+        }
+
+        [Theory]
+        [InlineData("Expected string", "String")]
+        [InlineData(null, "Null")]
+        public void BeJsonSerializableInto_PropertyTypeDifferent_Number(object expectedValue, string expectedTypeMessage)
+        {
+            var json = new JsonSerializableClass()
+            {
+                StringProperty = "String value",
+                Int32Property = 1234,
+            };
+
+            var act = () =>
+            {
+                json.Should().BeJsonSerializableInto(new
+                {
+                    string_property = "String value",
+                    int32_property = expectedValue,
+                });
+            };
+
+            act.Should().ThrowExactly<XunitException>()
+                .WithMessage($"$.int32_property: Expected property to be '{expectedTypeMessage}' type instead of 'Number' type.");
+        }
+
+        [Theory]
+        [InlineData(true, "True")]
+        [InlineData(false, "False")]
+        public void BeJsonSerializableInto_PropertyTypeDifferent_Boolean(bool value, string insteadOfMessageString)
+        {
+            var json = new JsonSerializableClass()
+            {
+                StringProperty = "String value",
+                Int32Property = 1234,
+                BooleanProperty = value,
+            };
+
+            var act = () =>
+            {
+                json.Should().BeJsonSerializableInto(new
+                {
+                    string_property = "String value",
+                    int32_property = 1234,
+                    boolean_property = new { },
+                });
+            };
+
+            act.Should().ThrowExactly<XunitException>()
+                .WithMessage($"$.boolean_property: Expected property to be 'Object' type instead of '{insteadOfMessageString}' type.");
+        }
+
+        [Theory]
+        [InlineData("String value", "String")]
+        [InlineData(12.34, "Number")]
+        [InlineData(1234, "Number")]
+        [InlineData(true, "True")]
+        [InlineData(false, "False")]
+        [InlineData(null, "Null")]
+        public void BeJsonSerializableInto_PropertyTypeDifferent_Object(object value, string expectedKindMessage)
+        {
+            var json = new JsonSerializableClass()
+            {
+                StringProperty = "String value",
+                Int32Property = 1234,
+                BooleanProperty = true,
+                NullProperty = null,
+                InnerObject = new JsonSerializableClassInnerObject(),
+            };
+
+            var act = () =>
+            {
+                json.Should().BeJsonSerializableInto(new
+                {
+                    string_property = "String value",
+                    int32_property = 1234,
+                    boolean_property = true,
+                    null_property = (int?)null,
+                    inner_object = value,
+                });
+            };
+
+            act.Should().ThrowExactly<XunitException>()
+                .WithMessage($"$.inner_object: Expected property to be '{expectedKindMessage}' type instead of 'Object' type.");
+        }
+
+        [Theory]
+        [InlineData("String value", "String")]
+        [InlineData(12.34, "Number")]
+        [InlineData(1234, "Number")]
+        [InlineData(true, "True")]
+        [InlineData(false, "False")]
+        [InlineData(null, "Null")]
+        public void BeJsonSerializableInto_PropertyTypeDifferent_Array(object value, string expectedKindMessage)
+        {
+            var json = new JsonSerializableClass()
+            {
+                StringProperty = "String value",
+                Int32Property = 1234,
+                BooleanProperty = true,
+                NullProperty = null,
+                InnerObject = new JsonSerializableClassInnerObject() { InnerStringProperty = "Inner string" },
+                CollectionInt32 = new List<int> { 1, 2 },
+            };
+
+            var act = () =>
+            {
+                json.Should().BeJsonSerializableInto(new
+                {
+                    string_property = "String value",
+                    int32_property = 1234,
+                    boolean_property = true,
+                    null_property = (int?)null,
+                    inner_object = new { inner_string_property = "Inner string" },
+                    collection_int = value,
+                });
+            };
+
+            act.Should().ThrowExactly<XunitException>()
+                .WithMessage($"$.collection_int: Expected property to be '{expectedKindMessage}' type instead of 'Array' type.");
         }
 
         [Fact]
@@ -550,6 +671,122 @@ namespace FluentAssertions.Json.Tests
         }
 
         [Fact]
+        public void BeJsonSerializableInto_WithPolymorphism()
+        {
+            var point = new ThreeDimensionalPoint()
+            {
+                X = 1,
+                Y = 2,
+                Z = 3,
+            };
+
+            point.Should().BeJsonSerializableInto<BasePoint>(
+                new
+                {
+                    myType = "3d",
+                    X = 1,
+                    Y = 2,
+                    Z = 3,
+                });
+        }
+
+        [Fact]
+        public void BeJsonSerializableInto_WithPolymorphism_WithOptions()
+        {
+            var point = new ThreeDimensionalPoint()
+            {
+                X = 1,
+                Y = 2,
+                Z = 3,
+            };
+
+            point.Should().BeJsonSerializableInto<BasePoint>(
+                new
+                {
+                    myType = "3d",
+                    x = 1,
+                    y = 2,
+                    z = 3,
+                },
+                new JsonSerializerOptions()
+                {
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                });
+        }
+
+        [Fact]
+        public void BeJsonSerializableInto_WithPolymorphism_AndConfigureOptions()
+        {
+            var point = new ThreeDimensionalPoint()
+            {
+                X = 1,
+                Y = 2,
+                Z = 3,
+            };
+
+            point.Should().BeJsonSerializableInto<BasePoint>(
+                new
+                {
+                    myType = "3d",
+                    x = 1,
+                    y = 2,
+                    z = 3,
+                },
+                opt =>
+                {
+                    opt.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+                });
+        }
+
+        [Fact]
+        public void BeJsonSerializableInto_WithPolymorphism_WithWrongInheritance()
+        {
+            var point = new ThreeDimensionalPoint()
+            {
+                X = 1,
+                Y = 2,
+                Z = 3,
+            };
+
+            var act = () =>
+            {
+                point.Should().BeJsonSerializableInto<string>(
+                    new
+                    {
+                        myType = "3d",
+                    });
+            };
+
+            act.Should().ThrowExactly<ArgumentException>()
+                .WithMessage("The 'System.String' class is not a base class of the 'FluentAssertions.Json.Tests.JsonFluentAssertionsExtensionsTest+ThreeDimensionalPoint' type. (Parameter 'TBase')")
+                .And.ParamName.Should().Be("TBase");
+        }
+
+        [Theory]
+        [InlineData(1234)]
+        [InlineData("The string")]
+        public void BeJsonSerializableInto_WithObjectProperty(object value)
+        {
+            var obj = new ClassWithObjectProperty()
+            {
+                Inner = new InnerClassWithObjectProperty()
+                {
+                    ObjectProperty = value,
+                },
+            };
+
+            obj.Should().BeJsonSerializableInto(
+                new
+                {
+                    inner = new
+                    {
+                        object_property = value,
+                    },
+                    collection_of_inner = (string)null,
+                });
+        }
+
+        [Fact]
         public void BeJsonDeserializableInto()
         {
             var json = new
@@ -730,6 +967,244 @@ namespace FluentAssertions.Json.Tests
             }
         }
 
+        [Fact]
+        public void BeJsonDeserializableInto_WithAnonymousArray()
+        {
+            var json = new[]
+            {
+                new
+                {
+                    X = 1,
+                    Y = 2,
+                },
+                new
+                {
+                    X = 3,
+                    Y = 4,
+                },
+            };
+
+            json.Should().BeJsonDeserializableInto(
+                new[]
+                {
+                    new BasePoint() { X = 1, Y = 2 },
+                    new BasePoint() { X = 3, Y = 4 },
+                });
+        }
+
+        [Fact]
+        public void BeJsonDeserializableInto_WithAnonymousArray_WithOptions()
+        {
+            var json = new[]
+            {
+                new
+                {
+                    x = 1,
+                    y = 2,
+                },
+                new
+                {
+                    x = 3,
+                    y = 4,
+                },
+            };
+
+            json.Should().BeJsonDeserializableInto(
+                new[]
+                {
+                    new BasePoint() { X = 1, Y = 2 },
+                    new BasePoint() { X = 3, Y = 4 },
+                },
+                new JsonSerializerOptions()
+                {
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                });
+        }
+
+        [Fact]
+        public void BeJsonDeserializableInto_WithAnonymousArray_WithOptionsConfigure()
+        {
+            var json = new[]
+            {
+                new
+                {
+                    x = 1,
+                    y = 2,
+                },
+                new
+                {
+                    x = 3,
+                    y = 4,
+                },
+            };
+
+            json.Should().BeJsonDeserializableInto(
+                new[]
+                {
+                    new BasePoint() { X = 1, Y = 2 },
+                    new BasePoint() { X = 3, Y = 4 },
+                },
+                opt =>
+                {
+                    opt.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+                });
+        }
+
+        [Theory]
+        [InlineData(1234, 1234)]
+        [InlineData(1234, 1234.0)]
+        [InlineData(1234.0, 1234)]
+        [InlineData("The string", "The string")]
+        [InlineData(12.32, 12.32)]
+        public void BeJsonDeserializableInto_WithObjectProperty(object value, object expectedValue)
+        {
+            var json = new
+            {
+                inner = new
+                {
+                    object_property = value,
+                },
+                collection_of_inner = new[]
+                {
+                    new
+                    {
+                        object_property = value,
+                    },
+                    new
+                    {
+                        object_property = value,
+                    },
+                },
+            };
+
+            json.Should().BeJsonDeserializableInto(new ClassWithObjectProperty()
+            {
+                Inner = new InnerClassWithObjectProperty()
+                {
+                    ObjectProperty = expectedValue,
+                },
+                InnerCollection = new List<InnerClassWithObjectProperty>()
+                {
+                    new InnerClassWithObjectProperty()
+                    {
+                        ObjectProperty = expectedValue,
+                    },
+                    new InnerClassWithObjectProperty()
+                    {
+                        ObjectProperty = expectedValue,
+                    },
+                },
+            });
+        }
+
+        [Theory]
+        [InlineData(1234)]
+        [InlineData(12.34)]
+        public void BeJsonDeserializableInto_WithObjectProperty_Number_Different(object value)
+        {
+            var json = new
+            {
+                inner = new
+                {
+                    object_property = value,
+                },
+            };
+
+            var act = () =>
+            {
+                json.Should().BeJsonDeserializableInto(new ClassWithObjectProperty()
+                {
+                    Inner = new InnerClassWithObjectProperty()
+                    {
+                        ObjectProperty = 8888,
+                    },
+                });
+            };
+
+            act.Should().ThrowExactly<XunitException>()
+                .WithMessage($"$.inner.object_property: Expected '8888' instead of '{value}'.");
+        }
+
+        [Theory]
+        [InlineData(1234)]
+        [InlineData(12.34)]
+        public void BeJsonDeserializableInto_WithObjectProperty_Number_WrongType(object value)
+        {
+            var json = new
+            {
+                inner = new
+                {
+                    object_property = value,
+                },
+            };
+
+            var act = () =>
+            {
+                json.Should().BeJsonDeserializableInto(new ClassWithObjectProperty()
+                {
+                    Inner = new InnerClassWithObjectProperty()
+                    {
+                        ObjectProperty = "Other type",
+                    },
+                });
+            };
+
+            act.Should().ThrowExactly<XunitException>()
+                .WithMessage($"$.inner.object_property: Expected property to be 'String' type instead of 'Number' type.");
+        }
+
+        [Fact]
+        public void BeJsonDeserializableInto_WithObjectProperty_String_Different()
+        {
+            var json = new
+            {
+                inner = new
+                {
+                    object_property = "The actual string",
+                },
+            };
+
+            var act = () =>
+            {
+                json.Should().BeJsonDeserializableInto(new ClassWithObjectProperty()
+                {
+                    Inner = new InnerClassWithObjectProperty()
+                    {
+                        ObjectProperty = "The expected string",
+                    },
+                });
+            };
+
+            act.Should().ThrowExactly<XunitException>()
+                .WithMessage("$.inner.object_property: Expected 'The expected string' instead of 'The actual string'.");
+        }
+
+        [Fact]
+        public void BeJsonDeserializableInto_WithObjectProperty_String_WrongType()
+        {
+            var json = new
+            {
+                inner = new
+                {
+                    object_property = "The actual string",
+                },
+            };
+
+            var act = () =>
+            {
+                json.Should().BeJsonDeserializableInto(new ClassWithObjectProperty()
+                {
+                    Inner = new InnerClassWithObjectProperty()
+                    {
+                        ObjectProperty = 1234,
+                    },
+                });
+            };
+
+            act.Should().ThrowExactly<XunitException>()
+                .WithMessage("$.inner.object_property: Expected property to be 'Number' type instead of 'String' type.");
+        }
+
         private class JsonSerializableClass
         {
             [JsonPropertyName("string_property")]
@@ -796,6 +1271,38 @@ namespace FluentAssertions.Json.Tests
             {
                 throw new NotImplementedException();
             }
+        }
+
+        [JsonPolymorphic(TypeDiscriminatorPropertyName = "myType")]
+        [JsonDerivedType(typeof(ThreeDimensionalPoint), typeDiscriminator: "3d")]
+        private class BasePoint
+        {
+            [JsonPropertyOrder(1)]
+            public int X { get; set; }
+
+            [JsonPropertyOrder(2)]
+            public int Y { get; set; }
+        }
+
+        private class ThreeDimensionalPoint : BasePoint
+        {
+            [JsonPropertyOrder(3)]
+            public int Z { get; set; }
+        }
+
+        private class ClassWithObjectProperty
+        {
+            [JsonPropertyName("inner")]
+            public InnerClassWithObjectProperty Inner { get; set; }
+
+            [JsonPropertyName("collection_of_inner")]
+            public List<InnerClassWithObjectProperty> InnerCollection { get; set; }
+        }
+
+        private class InnerClassWithObjectProperty
+        {
+            [JsonPropertyName("object_property")]
+            public object ObjectProperty { get; set; }
         }
     }
 }
