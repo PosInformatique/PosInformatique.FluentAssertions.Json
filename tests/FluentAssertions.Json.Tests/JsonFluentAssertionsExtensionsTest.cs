@@ -782,6 +782,7 @@ namespace FluentAssertions.Json.Tests
                     {
                         object_property = value,
                     },
+                    collection_of_inner = (string)null,
                 });
         }
 
