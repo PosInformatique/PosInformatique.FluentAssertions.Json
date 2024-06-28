@@ -1205,6 +1205,103 @@ namespace FluentAssertions.Json.Tests
                 .WithMessage("$.inner.object_property: Expected property to be 'Number' type instead of 'String' type.");
         }
 
+        [Fact]
+        public void BeJsonDeserializableInto_WithArrayOfString()
+        {
+            var json = new[] { "A", "B", "C" };
+
+            json.Should().BeJsonDeserializableInto(new[] { "A", "B", "C" });
+        }
+
+        [Fact]
+        public void BeJsonDeserializableInto_WithArrayOfString_WithOptions()
+        {
+            var json = new[] { "A", "B", "C" };
+
+            json.Should().BeJsonDeserializableInto(
+                new[] { "A", "B", "C" },
+                new JsonSerializerOptions()
+                {
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+                });
+        }
+
+        [Fact]
+        public void BeJsonDeserializableInto_ArrayOfString_WithOptionsConfigure()
+        {
+            var json = new[] { "A", "B", "C" };
+
+            json.Should().BeJsonDeserializableInto(
+                new[] { "A", "B", "C" },
+                opt =>
+                {
+                    opt.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+                });
+        }
+
+        [Fact]
+        public void BeJsonDeserializableInto_PrimitiveValues()
+        {
+            var json = "A";
+
+            json.Should().BeJsonDeserializableInto("A");
+
+            var json2 = 1234;
+
+            json2.Should().BeJsonDeserializableInto(1234);
+
+            var json3 = 12.34;
+
+            json3.Should().BeJsonDeserializableInto(12.34);
+        }
+
+        [Fact]
+        public void BeJsonDeserializableInto_PrimitiveValues_WithOptions()
+        {
+            var json = "A";
+
+            json.Should().BeJsonDeserializableInto("A", new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+
+            var json2 = 1234;
+
+            json2.Should().BeJsonDeserializableInto(1234, new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+
+            var json3 = 12.34;
+
+            json3.Should().BeJsonDeserializableInto(12.34, new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+        }
+
+        [Fact]
+        public void BeJsonDeserializableInto_PrimitiveValues_WithOptionsConfigure()
+        {
+            var json = "A";
+
+            json.Should().BeJsonDeserializableInto(
+                "A",
+                opt =>
+                {
+                    opt.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+                });
+
+            var json2 = 1234;
+
+            json2.Should().BeJsonDeserializableInto(
+                1234,
+                opt =>
+                {
+                    opt.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+                });
+
+            var json3 = 12.34;
+
+            json3.Should().BeJsonDeserializableInto(
+                12.34,
+                opt =>
+                {
+                    opt.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+                });
+        }
+
         private class JsonSerializableClass
         {
             [JsonPropertyName("string_property")]

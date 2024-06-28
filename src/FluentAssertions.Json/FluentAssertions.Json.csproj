@@ -11,8 +11,12 @@
     <PackageProjectUrl>https://github.com/PosInformatique/PosInformatique.FluentAssertions.Json</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageReleaseNotes>
+      1.3.0
+      - Add new overload BeJsonDeserializableInto() method to test the string collections.
+      - Add new overload BeJsonDeserializableInto() method to test the string and numeric values.
+
       1.2.0
-      - Add new override BeJsonSerializableInto() method to test polymorphism serialization with discriminator JSON property.
+      - Add new overload BeJsonSerializableInto() method to test polymorphism serialization with discriminator JSON property.
       - Add the support to assert the deserialization of root JSON array.
 
       1.1.0

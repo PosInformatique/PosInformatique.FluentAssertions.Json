@@ -31,10 +31,6 @@
       <Link>stylecop.json</Link>
     </AdditionalFiles>
   </ItemGroup>
-
-  <ItemGroup>
-    <None Include="..\..\.editorconfig" Link=".editorconfig" />
-  </ItemGroup>
   
   <!-- Common NuGet packages -->
   <ItemGroup>
