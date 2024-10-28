@@ -143,7 +143,7 @@ namespace FluentAssertions
         public static void BeJsonDeserializableInto<T>(this NumericAssertions<T> assertions, T expectedObject, JsonSerializerOptions? options = null)
             where T : struct, IComparable<T>
         {
-            BeJsonDeserializableIntoCore(assertions.Subject, expectedObject, GetSerializerOptions(options));
+            BeJsonDeserializableIntoCore(assertions.Subject!, expectedObject, GetSerializerOptions(options));
         }
 
         /// <summary>
@@ -241,7 +241,7 @@ namespace FluentAssertions
 
             configureOptions(optionsCopy);
 
-            BeJsonDeserializableIntoCore(assertions.Subject, expectedObject, optionsCopy);
+            BeJsonDeserializableIntoCore(assertions.Subject!, expectedObject, optionsCopy);
         }
 
         /// <summary>
