@@ -1,6 +1,8 @@
 # PosInformatique.FluentAssertions.Json
 PosInformatique.FluentAssertions.Json is a library to assert JSON serialization using the *Fluent Assertions* library style coding.
 
+[![Nuget](https://img.shields.io/nuget/v/PosInformatique.FluentAssertions.Json?label=PosInformatique.FluentAssertions.Json)](https://www.nuget.org/packages/PosInformatique.FluentAssertions.Json/)
+
 ## Installing from NuGet
 The [PosInformatique.FluentAssertions.Json](https://www.nuget.org/packages/PosInformatique.FluentAssertions.Json/)
 library is available directly on the
