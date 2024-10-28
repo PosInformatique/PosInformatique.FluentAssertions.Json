@@ -14,6 +14,7 @@ namespace FluentAssertions
     using FluentAssertions.Equivalency;
     using FluentAssertions.Numeric;
     using FluentAssertions.Primitives;
+    using FluentAssertions.Streams;
     using PosInformatique.FluentAssertions.Json;
 
     /// <summary>
@@ -142,7 +143,7 @@ namespace FluentAssertions
         public static void BeJsonDeserializableInto<T>(this NumericAssertions<T> assertions, T expectedObject, JsonSerializerOptions? options = null)
             where T : struct, IComparable<T>
         {
-            BeJsonDeserializableIntoCore(assertions.Subject, expectedObject, GetSerializerOptions(options));
+            BeJsonDeserializableIntoCore(assertions.Subject!, expectedObject, GetSerializerOptions(options));
         }
 
         /// <summary>
@@ -155,6 +156,20 @@ namespace FluentAssertions
         /// the default <see cref="IFluentAssertionsJsonConfiguration.JsonSerializerOptions"/> of the <see cref="FluentAssertionsJson.Configuration"/>
         /// will be used.</param>
         public static void BeJsonDeserializableInto<T>(this StringAssertions assertions, T expectedObject, JsonSerializerOptions? options = null)
+        {
+            BeJsonDeserializableIntoCore(assertions.Subject, expectedObject, GetSerializerOptions(options));
+        }
+
+        /// <summary>
+        /// Check if the JSON subject stream is deserializable into the specified <paramref name="expectedObject"/> argument.
+        /// </summary>
+        /// <typeparam name="T">Type of the object to deserialize from JSON.</typeparam>
+        /// <param name="assertions"><see cref="StreamAssertions"/> which contains the JSON subject to deserialize.</param>
+        /// <param name="expectedObject">Expected string value deserialized expected.</param>
+        /// <param name="options"><see cref="JsonSerializerOptions"/> to use to assert the deserialization. If not specified
+        /// the default <see cref="IFluentAssertionsJsonConfiguration.JsonSerializerOptions"/> of the <see cref="FluentAssertionsJson.Configuration"/>
+        /// will be used.</param>
+        public static void BeJsonDeserializableInto<T>(this StreamAssertions assertions, T expectedObject, JsonSerializerOptions? options = null)
         {
             BeJsonDeserializableIntoCore(assertions.Subject, expectedObject, GetSerializerOptions(options));
         }
@@ -226,7 +241,7 @@ namespace FluentAssertions
 
             configureOptions(optionsCopy);
 
-            BeJsonDeserializableIntoCore(assertions.Subject, expectedObject, optionsCopy);
+            BeJsonDeserializableIntoCore(assertions.Subject!, expectedObject, optionsCopy);
         }
 
         /// <summary>
@@ -277,11 +292,27 @@ namespace FluentAssertions
             }
         }
 
+        private static void BeJsonDeserializableIntoCore<T>(Stream subject, T expectedObject, JsonSerializerOptions options)
+        {
+            using var memoryStream = new MemoryStream();
+
+            subject.CopyTo(memoryStream);
+
+            var deserializedObject = JsonSerializer.Deserialize<T>(memoryStream.ToArray(), options);
+
+            AreEquivalent(deserializedObject, expectedObject);
+        }
+
         private static void BeJsonDeserializableIntoCore<T>(object subject, T expectedObject, JsonSerializerOptions options)
         {
             var jsonText = JsonSerializer.Serialize(subject, options);
             var deserializedObject = JsonSerializer.Deserialize<T>(jsonText, options);
 
+            AreEquivalent(deserializedObject, expectedObject);
+        }
+
+        private static void AreEquivalent<T>(T deserializedObject, T expectedObject)
+        {
             deserializedObject.Should().BeEquivalentTo(expectedObject, opt =>
             {
                 opt.Using<object>(ctx =>

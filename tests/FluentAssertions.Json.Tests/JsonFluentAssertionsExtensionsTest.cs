@@ -849,6 +849,106 @@ namespace FluentAssertions.Json.Tests
         }
 
         [Fact]
+        public void BeJsonDeserializableInto_FromStream()
+        {
+            var json = new
+            {
+                string_property = "The string value",
+                int32_property = 1234,
+                boolean_property = true,
+                null_property = (string)null,
+                inner_object = new
+                {
+                    inner_string_property = "Inner string value",
+                },
+                collection_int = new[]
+                {
+                    10,
+                    20,
+                },
+                collection_object = new[]
+                {
+                    new
+                    {
+                        inner_string_property = "Inner object 1",
+                    },
+                    new
+                    {
+                        inner_string_property = "Inner object 2",
+                    },
+                },
+            };
+
+            using var stream = new MemoryStream();
+
+            JsonSerializer.Serialize(stream, json);
+
+            stream.Position = 0;
+
+            var expectedObject = new JsonSerializableClass()
+            {
+                StringProperty = "The string value",
+                Int32Property = 1234,
+                BooleanProperty = true,
+                NullProperty = null,
+                InnerObject = new JsonSerializableClassInnerObject()
+                {
+                    InnerStringProperty = "Inner string value",
+                },
+                CollectionInt32 = new List<int>
+                {
+                    10,
+                    20,
+                },
+                CollectionObjects = new List<JsonSerializableClassInnerObject>()
+                {
+                    new JsonSerializableClassInnerObject()
+                    {
+                        InnerStringProperty = "Inner object 1",
+                    },
+                    new JsonSerializableClassInnerObject()
+                    {
+                        InnerStringProperty = "Inner object 2",
+                    },
+                },
+            };
+
+            stream.Should().BeJsonDeserializableInto(expectedObject);
+        }
+
+        [Fact]
+        public void BeJsonDeserializableInto_FromStream_WithSpecificOptions()
+        {
+            var json = new
+            {
+                int32_property = 10,
+                enum_property = "B",
+            };
+
+            using var stream = new MemoryStream();
+
+            JsonSerializer.Serialize(stream, json);
+
+            stream.Position = 0;
+
+            var options = new JsonSerializerOptions()
+            {
+                Converters =
+                {
+                    new JsonStringEnumConverter(),
+                },
+            };
+
+            stream.Should().BeJsonDeserializableInto(
+                new JsonSerializableClassWithEnum()
+                {
+                    Int32Property = 10,
+                    EnumProperty = EnumTest.B,
+                },
+                options);
+        }
+
+        [Fact]
         public void BeJsonDeserializableInto_WithSubjectNullAndExpectedNull()
         {
             var json = (object)null;
