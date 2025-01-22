@@ -276,7 +276,7 @@ namespace FluentAssertions
             {
                 if (expectedJson != null)
                 {
-                    throw new JsonAssertionsException("A JSON object was expected.");
+                    throw new JsonAssertionFailedException("A JSON object was expected.");
                 }
                 else
                 {
@@ -288,7 +288,7 @@ namespace FluentAssertions
 
             if (errors.Any())
             {
-                throw new JsonAssertionsException(errors.First());
+                throw new JsonAssertionFailedException(errors.First());
             }
         }
 
@@ -329,7 +329,7 @@ namespace FluentAssertions
 
                         if (errors.Any())
                         {
-                            throw new JsonAssertionsException(errors.First());
+                            throw new JsonAssertionFailedException(errors.First());
                         }
                     }
                 })
