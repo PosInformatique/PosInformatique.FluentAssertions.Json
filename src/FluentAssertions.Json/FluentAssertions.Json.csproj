@@ -11,6 +11,9 @@
     <PackageProjectUrl>https://github.com/PosInformatique/PosInformatique.FluentAssertions.Json</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageReleaseNotes>
+      1.5.0
+      - Add the support of FluentAssertions 8.0.0.
+
       1.4.0
       - Add new overload BeJsonDeserializableInto() method to test if a Stream contains a JSON serializable object.
 
