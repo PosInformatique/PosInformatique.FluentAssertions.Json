@@ -7,7 +7,7 @@
 namespace PosInformatique.FluentAssertions.Json
 {
     /// <summary>
-    /// Occurs when an assertions related to JSON serialization / deserialization has been failed.
+    /// Occurs when an assertion related to JSON serialization / deserialization has been failed.
     /// </summary>
     public class JsonAssertionFailedException : Exception
     {
