@@ -276,7 +276,7 @@ namespace FluentAssertions
             {
                 if (expectedJson != null)
                 {
-                    AssertionEngine.TestFramework.Throw("A JSON object was expected.");
+                    Services.ThrowException("A JSON object was expected.");
                 }
                 else
                 {
@@ -288,7 +288,7 @@ namespace FluentAssertions
 
             if (errors.Any())
             {
-                AssertionEngine.TestFramework.Throw(errors.First());
+                Services.ThrowException(errors.First());
             }
         }
 
@@ -323,13 +323,13 @@ namespace FluentAssertions
                     // So we have to compare the JsonElement with the expected .NET object specified by the developer in the unit tests.
                     if (ctx.Subject is JsonElement element)
                     {
-                        var path = ReflectionHelper.GetJsonPath(deserializedObject!.GetType(), ctx.SelectedNode.Subject.PathAndName);
+                        var path = ReflectionHelper.GetJsonPath(deserializedObject!.GetType(), ctx.SelectedNode.PathAndName);
 
                         var errors = JsonElementComparer.Compare(element, ctx.Expectation, path);
 
                         if (errors.Any())
                         {
-                            AssertionEngine.TestFramework.Throw(errors.First());
+                            Services.ThrowException(errors.First());
                         }
                     }
                 })
