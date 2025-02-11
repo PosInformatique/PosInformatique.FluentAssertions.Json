@@ -99,7 +99,7 @@ namespace FluentAssertions.Json.Tests
                 });
             };
 
-            act.Should().ThrowExactly<XunitException>()
+            act.Should().ThrowExactly<JsonAssertionFailedException>()
                 .WithMessage("$.string_property: Expected 'Expected value' instead of 'Actual value'.");
         }
 
@@ -121,7 +121,7 @@ namespace FluentAssertions.Json.Tests
                 });
             };
 
-            act.Should().ThrowExactly<XunitException>()
+            act.Should().ThrowExactly<JsonAssertionFailedException>()
                 .WithMessage("$.int32_property: Expected '100' instead of '1234'.");
         }
 
@@ -147,7 +147,7 @@ namespace FluentAssertions.Json.Tests
                 });
             };
 
-            act.Should().ThrowExactly<XunitException>()
+            act.Should().ThrowExactly<JsonAssertionFailedException>()
                 .WithMessage($"$.boolean_property: Expected '{expectedValueString}' instead of '{actualValueString}'.");
         }
 
@@ -173,7 +173,7 @@ namespace FluentAssertions.Json.Tests
                 });
             };
 
-            act.Should().ThrowExactly<XunitException>()
+            act.Should().ThrowExactly<JsonAssertionFailedException>()
                 .WithMessage("$.null_property: Expected property to be 'String' type instead of 'Null' type.");
         }
 
@@ -207,7 +207,7 @@ namespace FluentAssertions.Json.Tests
                 });
             };
 
-            act.Should().ThrowExactly<XunitException>()
+            act.Should().ThrowExactly<JsonAssertionFailedException>()
                 .WithMessage("$.inner_object.inner_string_property: Expected 'Other inner string value' instead of 'Inner string value'.");
         }
 
@@ -251,7 +251,7 @@ namespace FluentAssertions.Json.Tests
                 });
             };
 
-            act.Should().ThrowExactly<XunitException>()
+            act.Should().ThrowExactly<JsonAssertionFailedException>()
                 .WithMessage("$.collection_int[1]: Expected '1234' instead of '20'.");
         }
 
@@ -294,7 +294,7 @@ namespace FluentAssertions.Json.Tests
                 });
             };
 
-            act.Should().ThrowExactly<XunitException>()
+            act.Should().ThrowExactly<JsonAssertionFailedException>()
                 .WithMessage("$.collection_int: Expected 2 item(s) but found 1.");
         }
 
@@ -337,7 +337,7 @@ namespace FluentAssertions.Json.Tests
                 });
             };
 
-            act.Should().ThrowExactly<XunitException>()
+            act.Should().ThrowExactly<JsonAssertionFailedException>()
                 .WithMessage("$.collection_int: Expected 1 item(s) but found 2.");
         }
 
@@ -357,7 +357,7 @@ namespace FluentAssertions.Json.Tests
                 });
             };
 
-            act.Should().ThrowExactly<XunitException>()
+            act.Should().ThrowExactly<JsonAssertionFailedException>()
                 .WithMessage("$.string_property: Expected property to be 'Object' type instead of 'String' type.");
         }
 
@@ -381,7 +381,7 @@ namespace FluentAssertions.Json.Tests
                 });
             };
 
-            act.Should().ThrowExactly<XunitException>()
+            act.Should().ThrowExactly<JsonAssertionFailedException>()
                 .WithMessage($"$.int32_property: Expected property to be '{expectedTypeMessage}' type instead of 'Number' type.");
         }
 
@@ -407,7 +407,7 @@ namespace FluentAssertions.Json.Tests
                 });
             };
 
-            act.Should().ThrowExactly<XunitException>()
+            act.Should().ThrowExactly<JsonAssertionFailedException>()
                 .WithMessage($"$.boolean_property: Expected property to be 'Object' type instead of '{insteadOfMessageString}' type.");
         }
 
@@ -441,7 +441,7 @@ namespace FluentAssertions.Json.Tests
                 });
             };
 
-            act.Should().ThrowExactly<XunitException>()
+            act.Should().ThrowExactly<JsonAssertionFailedException>()
                 .WithMessage($"$.inner_object: Expected property to be '{expectedKindMessage}' type instead of 'Object' type.");
         }
 
@@ -477,7 +477,7 @@ namespace FluentAssertions.Json.Tests
                 });
             };
 
-            act.Should().ThrowExactly<XunitException>()
+            act.Should().ThrowExactly<JsonAssertionFailedException>()
                 .WithMessage($"$.collection_int: Expected property to be '{expectedKindMessage}' type instead of 'Array' type.");
         }
 
@@ -497,7 +497,7 @@ namespace FluentAssertions.Json.Tests
                 });
             };
 
-            act.Should().ThrowExactly<XunitException>()
+            act.Should().ThrowExactly<JsonAssertionFailedException>()
                 .WithMessage("$: Expected property with the 'string_property_other_name' name but found 'string_property' instead.");
         }
 
@@ -518,7 +518,7 @@ namespace FluentAssertions.Json.Tests
                 });
             };
 
-            act.Should().ThrowExactly<XunitException>()
+            act.Should().ThrowExactly<JsonAssertionFailedException>()
                 .WithMessage("$: Expected 'new_property' property but found no property.");
         }
 
@@ -537,7 +537,7 @@ namespace FluentAssertions.Json.Tests
                 });
             };
 
-            act.Should().ThrowExactly<XunitException>()
+            act.Should().ThrowExactly<JsonAssertionFailedException>()
                 .WithMessage("$: Expected no property but found 'inner_string_property' property.");
         }
 
@@ -551,7 +551,7 @@ namespace FluentAssertions.Json.Tests
                 json.Should().BeJsonSerializableInto(new { });
             };
 
-            act.Should().ThrowExactly<XunitException>()
+            act.Should().ThrowExactly<JsonAssertionFailedException>()
                 .WithMessage("A JSON object was expected.");
         }
 
@@ -1221,7 +1221,7 @@ namespace FluentAssertions.Json.Tests
                 });
             };
 
-            act.Should().ThrowExactly<XunitException>()
+            act.Should().ThrowExactly<JsonAssertionFailedException>()
                 .WithMessage($"$.inner.object_property: Expected '8888' instead of '{value}'.");
         }
 
@@ -1249,7 +1249,7 @@ namespace FluentAssertions.Json.Tests
                 });
             };
 
-            act.Should().ThrowExactly<XunitException>()
+            act.Should().ThrowExactly<JsonAssertionFailedException>()
                 .WithMessage($"$.inner.object_property: Expected property to be 'String' type instead of 'Number' type.");
         }
 
@@ -1275,7 +1275,7 @@ namespace FluentAssertions.Json.Tests
                 });
             };
 
-            act.Should().ThrowExactly<XunitException>()
+            act.Should().ThrowExactly<JsonAssertionFailedException>()
                 .WithMessage("$.inner.object_property: Expected 'The expected string' instead of 'The actual string'.");
         }
 
@@ -1301,7 +1301,7 @@ namespace FluentAssertions.Json.Tests
                 });
             };
 
-            act.Should().ThrowExactly<XunitException>()
+            act.Should().ThrowExactly<JsonAssertionFailedException>()
                 .WithMessage("$.inner.object_property: Expected property to be 'Number' type instead of 'String' type.");
         }
 
