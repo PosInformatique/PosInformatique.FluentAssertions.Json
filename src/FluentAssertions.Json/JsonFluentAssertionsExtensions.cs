@@ -227,7 +227,9 @@ namespace FluentAssertions
         /// will be used.</param>
         public static void BeJsonDeserializableInto<T>(this StringAssertions assertions, T expectedObject, JsonSerializerOptions? options = null)
         {
-            BeJsonDeserializableIntoCore(assertions.Subject, expectedObject, GetSerializerOptions(options));
+            var jsonDocument = JsonSerializer.Deserialize<JsonDocument>(assertions.Subject);
+
+            BeJsonDeserializableIntoCore(jsonDocument!, expectedObject, GetSerializerOptions(options));
         }
 
         /// <summary>
@@ -324,11 +326,13 @@ namespace FluentAssertions
         /// of the <see cref="FluentAssertionsJson.Configuration"/> used to assert the deserialization.</param>
         public static void BeJsonDeserializableInto<T>(this StringAssertions assertions, T expectedObject, Action<JsonSerializerOptions> configureOptions)
         {
+            var jsonDocument = JsonSerializer.Deserialize<JsonDocument>(assertions.Subject);
+
             var optionsCopy = new JsonSerializerOptions(FluentAssertionsJson.Configuration.JsonSerializerOptions);
 
             configureOptions(optionsCopy);
 
-            BeJsonDeserializableIntoCore(assertions.Subject, expectedObject, optionsCopy);
+            BeJsonDeserializableIntoCore(jsonDocument!, expectedObject, optionsCopy);
         }
 
         private static void BeJsonSerializableIntoCore<TBase>(ObjectAssertions assertions, string expectedJson, JsonSerializerOptions options)

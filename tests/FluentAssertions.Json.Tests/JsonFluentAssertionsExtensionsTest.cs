@@ -2123,10 +2123,6 @@ namespace FluentAssertions.Json.Tests
         [Fact]
         public void BeJsonDeserializableInto_PrimitiveValues()
         {
-            var json = "A";
-
-            json.Should().BeJsonDeserializableInto("A");
-
             var json2 = 1234;
 
             json2.Should().BeJsonDeserializableInto(1234);
@@ -2139,10 +2135,6 @@ namespace FluentAssertions.Json.Tests
         [Fact]
         public void BeJsonDeserializableInto_PrimitiveValues_WithOptions()
         {
-            var json = "A";
-
-            json.Should().BeJsonDeserializableInto("A", new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
-
             var json2 = 1234;
 
             json2.Should().BeJsonDeserializableInto(1234, new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
@@ -2155,15 +2147,6 @@ namespace FluentAssertions.Json.Tests
         [Fact]
         public void BeJsonDeserializableInto_PrimitiveValues_WithOptionsConfigure()
         {
-            var json = "A";
-
-            json.Should().BeJsonDeserializableInto(
-                "A",
-                opt =>
-                {
-                    opt.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
-                });
-
             var json2 = 1234;
 
             json2.Should().BeJsonDeserializableInto(
@@ -2177,6 +2160,76 @@ namespace FluentAssertions.Json.Tests
 
             json3.Should().BeJsonDeserializableInto(
                 12.34,
+                opt =>
+                {
+                    opt.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+                });
+        }
+
+        [Fact]
+        public void BeJsonDeserializableInto_FromRawLiteralString()
+        {
+            var json = """
+            {
+                "inner":
+                {
+                    "object_property": "The actual string"
+                }
+            }
+            """;
+
+            json.Should().BeJsonDeserializableInto(new
+            {
+                inner = new
+                {
+                    object_property = "The actual string",
+                },
+            });
+        }
+
+        [Fact]
+        public void BeJsonDeserializableInto_FromRawLiteralString_WithOptions()
+        {
+            var json = """
+            {
+                "inner":
+                {
+                    "object_property": "The actual string"
+                }
+            }
+            """;
+
+            json.Should().BeJsonDeserializableInto(
+                new
+                {
+                    Inner = new
+                    {
+                        Object_property = "The actual string",
+                    },
+                },
+                new JsonSerializerOptions() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+        }
+
+        [Fact]
+        public void BeJsonDeserializableInto_FromRawLiteralString_WithOptionsConfigure()
+        {
+            var json = """
+            {
+                "inner":
+                {
+                    "object_property": "The actual string"
+                }
+            }
+            """;
+
+            json.Should().BeJsonDeserializableInto(
+                new
+                {
+                    Inner = new
+                    {
+                        Object_property = "The actual string",
+                    },
+                },
                 opt =>
                 {
                     opt.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
