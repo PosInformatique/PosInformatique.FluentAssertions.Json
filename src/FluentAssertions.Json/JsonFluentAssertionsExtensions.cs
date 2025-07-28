@@ -338,7 +338,7 @@ namespace FluentAssertions
                 throw new ArgumentNullException(nameof(expectedJson));
             }
 
-            var jsonDocument = JsonSerializer.Deserialize<JsonDocument>(expectedJson, options);
+            var jsonDocument = JsonSerializer.Deserialize<JsonDocument>(expectedJson);
 
             BeJsonSerializableIntoCore<object>(assertions, jsonDocument, GetSerializerOptions(options));
         }
