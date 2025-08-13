@@ -116,6 +116,31 @@ public void Serialization()
 And when an exception is occured, the exception message contains the JSON path of the property which is error:
 ![Pretty exception](https://raw.githubusercontent.com/PosInformatique/PosInformatique.FluentAssertions.Json/main/docs/PrettyExceptionSample.png)
 
+Since the version 1.6.0 it is possible to use a [raw string literal](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/tokens/raw-string)
+with a JSON content in the string:
+
+```csharp
+[Fact]
+public void Serialization()
+{
+    var customer = new Customer()
+    {
+        Id = 1234,
+        Name = "Gilles TOURREAU",
+        Gender = Gender.Male,
+    };
+
+    customer.Should().BeJsonSerializableInto(
+    """
+    {
+        "id": 1234,
+        "name": "Gilles TOURREAU",
+        "gender": 100
+    }
+    """);
+}
+```
+
 ### Test the deserialization of a JSON object to a .NET Object
 You can in the same way test the deserialization JSON object into a .NET object.
 
@@ -139,7 +164,32 @@ public void Deserialization()
 }
 ```
 
-## Test polymorphisme serialization with property discriminator
+Since the version 1.6.0 it is possible to use a [raw string literal](https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/tokens/raw-string)
+with a JSON string content as input of the `Should()` to assert:
+
+```
+[Fact]
+public void Deserialization()
+{
+    var json =
+    """
+    {
+        "id": 1234,
+        "name": "Gilles TOURREAU",
+        "gender": 100
+    }
+    """;
+
+    json.Should().BeJsonDeserializableInto(new Customer()
+    {
+        Id = 1234,
+        Name = "Gilles TOURREAU",
+        Gender = Gender.Male,
+    });
+}
+```
+
+## Test polymorphism serialization with property discriminator
 With the .NET 7.0 version of the `System.Text.Json` it is possible to serialize and deserialize JSON object
 with property discriminators for polymorphism scenario
 (See the [How to serialize properties of derived classes with System.Text.Json](https://learn.microsoft.com/en-us/dotnet/standard/serialization/system-text-json/polymorphism?pivots=dotnet-7-0))
