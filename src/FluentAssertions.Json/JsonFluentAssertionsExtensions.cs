@@ -410,25 +410,26 @@ namespace FluentAssertions
         {
             deserializedObject.Should().BeEquivalentTo(expectedObject, opt =>
             {
-                opt.Using<object>(ctx =>
-                {
-                    // Test if the Subject is not a JsonElement.
-                    // This scenerio happen when deserializing JSON content in .NET object
-                    // which contains "object" property. In this case, the JsonSerializer will put JsonElement in this property.
-                    // So we have to compare the JsonElement with the expected .NET object specified by the developer in the unit tests.
-                    if (ctx.Subject is JsonElement element)
+                opt.RespectingRuntimeTypes()
+                    .Using<object>(ctx =>
                     {
-                        var path = ReflectionHelper.GetJsonPath(deserializedObject!.GetType(), ctx.SelectedNode.PathAndName);
-
-                        var errors = JsonElementComparer.CompareWithObject(element, ctx.Expectation, path);
-
-                        if (errors.Any())
+                        // Test if the Subject is not a JsonElement.
+                        // This scenerio happen when deserializing JSON content in .NET object
+                        // which contains "object" property. In this case, the JsonSerializer will put JsonElement in this property.
+                        // So we have to compare the JsonElement with the expected .NET object specified by the developer in the unit tests.
+                        if (ctx.Subject is JsonElement element)
                         {
-                            throw new JsonAssertionFailedException(errors.First());
+                            var path = ReflectionHelper.GetJsonPath(deserializedObject!, ctx.SelectedNode.PathAndName);
+
+                            var errors = JsonElementComparer.CompareWithObject(element, ctx.Expectation, path);
+
+                            if (errors.Any())
+                            {
+                                throw new JsonAssertionFailedException(errors.First());
+                            }
                         }
-                    }
-                })
-                .When(member => member.Type == typeof(object));
+                    })
+                    .When(member => member.Type == typeof(object));
 
                 return opt.Excluding(member => IsIgnoredProperty(member));
             });

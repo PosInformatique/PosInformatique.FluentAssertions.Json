@@ -22,12 +22,41 @@ namespace PosInformatique.FluentAssertions.Json.Tests.Tests
         [Fact]
         public void GetJsonPath()
         {
-            ReflectionHelper.GetJsonPath(typeof(RootObject), "PropertyRoot.PropertyRoot.InnerObject.Property1").Should().Be("$.root.root.InnerObject.Property1");
-            ReflectionHelper.GetJsonPath(typeof(RootObject), "PropertyRoot.PropertyRoot.InnerObject.Property2").Should().Be("$.root.root.InnerObject.property_2");
-            ReflectionHelper.GetJsonPath(typeof(RootObject), "PropertyRoot").Should().Be("$.root");
+            var @object = new RootObject()
+            {
+                PropertyRoot = new RootObject()
+                {
+                    PropertyRoot = new RootObject()
+                    {
+                        InnerObject = new ObjectWithProperties(),
+                    },
+                },
+                InnerObject = new InheritedObjectWithProperties(),
+                CollectionExplicitName = new Dictionary<string, ObjectWithProperties>
+                {
+                    { "xxx", new ObjectWithProperties() },
+                    { "yyy", new ObjectWithProperties() },
+                },
+                CollectionImplicitName = new List<ObjectWithProperties>
+                {
+                    new ObjectWithProperties(),
+                    new ObjectWithProperties(),
+                },
+            };
 
-            ReflectionHelper.GetJsonPath(typeof(RootObject), "CollectionImplicitName[0].Property1").Should().Be("$.CollectionImplicitName[0].Property1");
-            ReflectionHelper.GetJsonPath(typeof(RootObject), "CollectionExplicitName[xxx].Property2").Should().Be("$.collection_explicit_name[xxx].property_2");
+            ReflectionHelper.GetJsonPath(@object, "PropertyRoot.PropertyRoot.InnerObject.Property1").Should().Be("$.root.root.InnerObject.Property1");
+            ReflectionHelper.GetJsonPath(@object, "PropertyRoot.PropertyRoot.InnerObject.Property2").Should().Be("$.root.root.InnerObject.property_2");
+            ReflectionHelper.GetJsonPath(@object, "PropertyRoot").Should().Be("$.root");
+
+            ReflectionHelper.GetJsonPath(@object, "InnerObject.Property1").Should().Be("$.InnerObject.Property1");
+            ReflectionHelper.GetJsonPath(@object, "InnerObject.Property2").Should().Be("$.InnerObject.property_2");
+            ReflectionHelper.GetJsonPath(@object, "InnerObject.Property3").Should().Be("$.InnerObject.Property3");
+            ReflectionHelper.GetJsonPath(@object, "InnerObject.Property4").Should().Be("$.InnerObject.property_4");
+
+            ReflectionHelper.GetJsonPath(@object, "CollectionImplicitName[0].Property1").Should().Be("$.CollectionImplicitName[0].Property1");
+            ReflectionHelper.GetJsonPath(@object, "CollectionImplicitName[1].Property1").Should().Be("$.CollectionImplicitName[1].Property1");
+            ReflectionHelper.GetJsonPath(@object, "CollectionExplicitName[xxx].Property2").Should().Be("$.collection_explicit_name[xxx].property_2");
+            ReflectionHelper.GetJsonPath(@object, "CollectionExplicitName[yyy].Property2").Should().Be("$.collection_explicit_name[yyy].property_2");
         }
 
         [Fact]
@@ -68,7 +97,7 @@ namespace PosInformatique.FluentAssertions.Json.Tests.Tests
             public List<ObjectWithProperties> CollectionImplicitName { get; set; }
 
             [JsonPropertyName("collection_explicit_name")]
-            public List<ObjectWithProperties> CollectionExplicitName { get; set; }
+            public Dictionary<string, ObjectWithProperties> CollectionExplicitName { get; set; }
         }
 
         private class ObjectWithProperties
@@ -77,6 +106,14 @@ namespace PosInformatique.FluentAssertions.Json.Tests.Tests
 
             [JsonPropertyName("property_2")]
             public string Property2 { get; set; }
+        }
+
+        private class InheritedObjectWithProperties : ObjectWithProperties
+        {
+            public string Property3 { get; set; }
+
+            [JsonPropertyName("property_4")]
+            public string Property4 { get; set; }
         }
     }
 }

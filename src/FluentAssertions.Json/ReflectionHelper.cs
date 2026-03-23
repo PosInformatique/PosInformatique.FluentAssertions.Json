@@ -8,7 +8,6 @@ namespace PosInformatique.FluentAssertions.Json
 {
     using System.Collections;
     using System.Reflection;
-    using System.Runtime.InteropServices;
     using System.Text.Json;
     using System.Text.Json.Serialization;
 
@@ -28,7 +27,7 @@ namespace PosInformatique.FluentAssertions.Json
             return property.Name;
         }
 
-        public static string GetJsonPath(Type type, string path)
+        public static string GetJsonPath(object instance, string path)
         {
             var propertyNames = path.Split('.');
 
@@ -46,7 +45,7 @@ namespace PosInformatique.FluentAssertions.Json
                     propertyName = p.Substring(0, indexArray);
                 }
 
-                var property = type.GetProperty(propertyName);
+                var property = instance.GetType().GetProperty(propertyName);
 
                 result.Add(GetJsonPropertyName(property));
 
@@ -57,11 +56,15 @@ namespace PosInformatique.FluentAssertions.Json
 
                     result[result.Count - 1] = result[result.Count - 1] + indexString;
 
-                    type = GetEnumerableElementType(property.PropertyType);
+                    instance = property.GetValue(instance, null);
+
+                    // Gets the item of the list
+                    indexString = indexString.TrimStart("[").TrimEnd("]").ToString();
+                    instance = GetListItem(instance, indexString);
                 }
                 else
                 {
-                    type = property.PropertyType;
+                    instance = property.GetValue(instance, null);
                 }
             }
 
@@ -115,12 +118,14 @@ namespace PosInformatique.FluentAssertions.Json
             return false;
         }
 
-        private static Type GetEnumerableElementType(Type collectionType)
+        private static object GetListItem(object collection, string indexString)
         {
-            var enumerableType = collectionType.GetInterface("IEnumerable`1");
-            var elementType = enumerableType.GetGenericArguments()[0];
+            var itemProperty = collection.GetType().GetProperty("Item");
 
-            return elementType;
+            var itemType = itemProperty.GetIndexParameters()[0].ParameterType;
+            var index = Convert.ChangeType(indexString, itemType);
+
+            return itemProperty.GetValue(collection, [index]);
         }
     }
 }

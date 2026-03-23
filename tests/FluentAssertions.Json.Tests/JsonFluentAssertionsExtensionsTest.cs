@@ -676,6 +676,11 @@ namespace FluentAssertions.Json.Tests
                 X = 1,
                 Y = 2,
                 Z = 3,
+                Attributes = new Dictionary<string, object>
+                {
+                    { "Attribute1", "Value 1" },
+                    { "Attribute2", 2 },
+                },
             };
 
             point.Should().BeJsonSerializableInto<BasePoint>(
@@ -685,6 +690,11 @@ namespace FluentAssertions.Json.Tests
                     X = 1,
                     Y = 2,
                     Z = 3,
+                    Attributes = new
+                    {
+                        Attribute1 = "Value 1",
+                        Attribute2 = 2,
+                    },
                 });
         }
 
@@ -696,6 +706,11 @@ namespace FluentAssertions.Json.Tests
                 X = 1,
                 Y = 2,
                 Z = 3,
+                Attributes = new Dictionary<string, object>
+                {
+                    { "Attribute1", "Value 1" },
+                    { "Attribute2", 2 },
+                },
             };
 
             point.Should().BeJsonSerializableInto<BasePoint>(
@@ -705,6 +720,11 @@ namespace FluentAssertions.Json.Tests
                     x = 1,
                     y = 2,
                     z = 3,
+                    attributes = new
+                    {
+                        Attribute1 = "Value 1",
+                        Attribute2 = 2,
+                    },
                 },
                 new JsonSerializerOptions()
                 {
@@ -720,6 +740,11 @@ namespace FluentAssertions.Json.Tests
                 X = 1,
                 Y = 2,
                 Z = 3,
+                Attributes = new Dictionary<string, object>
+                {
+                    { "Attribute1", "Value 1" },
+                    { "Attribute2", 2 },
+                },
             };
 
             point.Should().BeJsonSerializableInto<BasePoint>(
@@ -729,6 +754,11 @@ namespace FluentAssertions.Json.Tests
                     x = 1,
                     y = 2,
                     z = 3,
+                    attributes = new
+                    {
+                        Attribute1 = "Value 1",
+                        Attribute2 = 2,
+                    },
                 },
                 opt =>
                 {
@@ -758,6 +788,42 @@ namespace FluentAssertions.Json.Tests
             act.Should().ThrowExactly<ArgumentException>()
                 .WithMessage("The 'System.String' class is not a base class of the 'FluentAssertions.Json.Tests.JsonFluentAssertionsExtensionsTest+ThreeDimensionalPoint' type. (Parameter 'TBase')")
                 .And.ParamName.Should().Be("TBase");
+        }
+
+        [Fact]
+        public void BeJsonSerializableInto_WithPolymorphism_ObjectProperty()
+        {
+            var point = new ClassWithPolymorphicObjectProperty()
+            {
+                Point = new ThreeDimensionalPoint()
+                {
+                    X = 1,
+                    Y = 2,
+                    Z = 3,
+                    Attributes = new Dictionary<string, object>
+                    {
+                        { "Attribute1", "Value 1" },
+                        { "Attribute2", 2 },
+                    },
+                },
+            };
+
+            point.Should().BeJsonSerializableInto(
+                new
+                {
+                    point = new
+                    {
+                        myType = "3d",
+                        X = 1,
+                        Y = 2,
+                        Z = 3,
+                        Attributes = new
+                        {
+                            Attribute1 = "Value 1",
+                            Attribute2 = 2,
+                        },
+                    },
+                });
         }
 
         [Theory]
@@ -1458,6 +1524,11 @@ namespace FluentAssertions.Json.Tests
                 X = 1,
                 Y = 2,
                 Z = 3,
+                Attributes = new Dictionary<string, object>
+                {
+                    { "Attribute 1", "Value 1" },
+                    { "Attribute 2", 2 },
+                },
             };
 
             point.Should().BeJsonSerializableInto<BasePoint>(
@@ -1466,7 +1537,12 @@ namespace FluentAssertions.Json.Tests
                     "myType": "3d",
                     "X": 1,
                     "Y": 2,
-                    "Z": 3
+                    "Z": 3,
+                    "Attributes":
+                    {
+                        "Attribute 1": "Value 1",
+                        "Attribute 2": 2
+                    }
                 }
                 """);
         }
@@ -1479,6 +1555,11 @@ namespace FluentAssertions.Json.Tests
                 X = 1,
                 Y = 2,
                 Z = 3,
+                Attributes = new Dictionary<string, object>
+                {
+                    { "Attribute 1", "Value 1" },
+                    { "Attribute 2", 2 },
+                },
             };
 
             point.Should().BeJsonSerializableInto<BasePoint>(
@@ -1487,7 +1568,12 @@ namespace FluentAssertions.Json.Tests
                     "myType": "3d",
                     "x": 1,
                     "y": 2,
-                    "z": 3
+                    "z": 3,
+                    "attributes":
+                    {
+                        "Attribute 1": "Value 1",
+                        "Attribute 2": 2
+                    }
                 }
                 """,
                 new JsonSerializerOptions()
@@ -1504,6 +1590,11 @@ namespace FluentAssertions.Json.Tests
                 X = 1,
                 Y = 2,
                 Z = 3,
+                Attributes = new Dictionary<string, object>
+                {
+                    { "Attribute 1", "Value 1" },
+                    { "Attribute 2", 2 },
+                },
             };
 
             point.Should().BeJsonSerializableInto<BasePoint>(
@@ -1512,7 +1603,12 @@ namespace FluentAssertions.Json.Tests
                     "myType": "3d",
                     "x": 1,
                     "y": 2,
-                    "z": 3
+                    "z": 3,
+                    "attributes":
+                    {
+                        "Attribute 1": "Value 1",
+                        "Attribute 2": 2
+                    }
                 }
                 """,
                 opt =>
@@ -2236,6 +2332,76 @@ namespace FluentAssertions.Json.Tests
                 });
         }
 
+        [Fact]
+        public void BeJsonDeserializableInto_WithPolymorphism()
+        {
+            var json =
+                """
+                {
+                    "myType": "3d",
+                    "X": 1,
+                    "Y": 2,
+                    "Z": 3,
+                    "Attributes":
+                    {
+                        "Attribute1": "Value 1",
+                        "Attribute2": 2
+                    }
+                }
+                """;
+
+            json.Should().BeJsonDeserializableInto(
+                new ThreeDimensionalPoint()
+                {
+                    X = 1,
+                    Y = 2,
+                    Z = 3,
+                    Attributes = new Dictionary<string, object>
+                    {
+                        { "Attribute1", "Value 1" },
+                        { "Attribute2", 2 },
+                    },
+                });
+        }
+
+        [Fact]
+        public void BeJsonDeserializableInto_WithPolymorphism_ObjectProperty()
+        {
+            var json =
+                """
+                {
+                    "point":
+                    {
+                        "myType": "3d",
+                        "X": 1,
+                        "Y": 2,
+                        "Z": 3,
+                        "Attributes":
+                        {
+                            "Attribute1": "Value 1",
+                            "Attribute2": 2
+                        }
+                    }
+                }
+                """;
+
+            json.Should().BeJsonDeserializableInto(
+                new ClassWithPolymorphicObjectProperty()
+                {
+                    Point = new ThreeDimensionalPoint()
+                    {
+                        X = 1,
+                        Y = 2,
+                        Z = 3,
+                        Attributes = new Dictionary<string, object>
+                        {
+                            { "Attribute1", "Value 1" },        // Should throw exception for this value...
+                            { "Attribute2", 2 },
+                        },
+                    },
+                });
+        }
+
         private class JsonSerializableClass
         {
             [JsonPropertyName("string_property")]
@@ -2319,6 +2485,15 @@ namespace FluentAssertions.Json.Tests
         {
             [JsonPropertyOrder(3)]
             public int Z { get; set; }
+
+            [JsonPropertyOrder(4)]
+            public Dictionary<string, object> Attributes { get; set; }
+        }
+
+        private class ClassWithPolymorphicObjectProperty
+        {
+            [JsonPropertyName("point")]
+            public BasePoint Point { get; set; }
         }
 
         private class ClassWithObjectProperty
