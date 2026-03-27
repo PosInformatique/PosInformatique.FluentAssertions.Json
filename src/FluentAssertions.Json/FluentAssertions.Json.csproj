@@ -11,6 +11,12 @@
     <PackageProjectUrl>https://github.com/PosInformatique/PosInformatique.FluentAssertions.Json</PackageProjectUrl>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageReleaseNotes>
+      1.7.0
+      - Fix the BeJsonDeserializableInto() when using polymorphism with object declared properties.
+
+      1.6.0
+      - Improves the BeJsonSerializableInto() and BeJsonDeserializableInto() methods to use C# raw string literal.
+
       1.5.0
       - Add the support of FluentAssertions 8.0.0.
 
